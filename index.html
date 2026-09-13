@@ -18,49 +18,48 @@
     <link href="./favicon/icon48.png" id="favicon" rel="icon" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
-    <!-- SIMPLE KEYBOARD (On-screen keyboard) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
+    <!-- KIOSKBOARD (On-screen keyboard) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/kioskboard@2.3.0/dist/kioskboard-2.3.0.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/kioskboard@2.3.0/dist/kioskboard-2.3.0.min.js"></script>
 
     <!-- FONT AWESOME (Icons for keyboard keys) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         /* =========================================================
-           ON-SCREEN KEYBOARD — GLASS THEME
+           KIOSKBOARD — GLASS THEME OVERRIDES
            ========================================================= */
 
-        #simpleKeyboardWrapper {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 2147483647;
-            display: none;
-            padding: 46px 14px 14px;
-            box-sizing: border-box;
-
+        #KioskBoard-VirtualKeyboard {
+            box-sizing: border-box !important;
+            position: fixed !important;
+            z-index: 2147483647 !important;
+            width: 100% !important;
+            max-width: 980px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            padding: 46px 14px 14px !important;
+            border-radius: 22px 22px 0 0 !important;
+            overflow: hidden !important;
             /* Glass effect */
             background:
                 linear-gradient(180deg,
                     rgba(255, 255, 255, 0.10) 0%,
                     rgba(255, 255, 255, 0.02) 32%,
                     rgba(20, 24, 38, 0.30) 100%),
-                rgba(18, 22, 34, 0.55);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border-top: 1px solid rgba(255, 255, 255, 0.22);
-            border-radius: 22px 22px 0 0;
+                rgba(18, 22, 34, 0.55) !important;
+            backdrop-filter: blur(28px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.22) !important;
             box-shadow:
                 0 -12px 48px rgba(0, 0, 0, 0.45),
                 0 -2px 8px rgba(0, 0, 0, 0.25),
                 inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.15);
-            overflow: hidden;
+                inset 0 -1px 0 rgba(0, 0, 0, 0.15) !important;
         }
 
         /* Glass shine layer */
-        #simpleKeyboardWrapper::before {
+        #KioskBoard-VirtualKeyboard::before {
             content: "";
             position: absolute;
             inset: 0;
@@ -72,8 +71,8 @@
             border-radius: inherit;
         }
 
-        /* Subtle noise/highlight texture */
-        #simpleKeyboardWrapper::after {
+        /* Subtle highlight line */
+        #KioskBoard-VirtualKeyboard::after {
             content: "";
             position: absolute;
             top: 0; left: 0; right: 0;
@@ -85,138 +84,103 @@
             pointer-events: none;
         }
 
-        #simpleKeyboardWrapper.active {
-            display: block;
-            animation: skSlideUp 0.28s cubic-bezier(0.22, 0.9, 0.3, 1);
-        }
-
-        @keyframes skSlideUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        #simpleKeyboardWrapper .simple-keyboard {
-            max-width: 980px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        #simpleKeyboardWrapper .hg-theme-default {
-            background: transparent;
-            padding: 0;
-        }
-
-        #simpleKeyboardWrapper .hg-theme-default .hg-row:not(:last-child) {
-            margin-bottom: 7px;
-        }
-
         /* ---------- Glass keys ---------- */
-        #simpleKeyboardWrapper .hg-theme-default .hg-button {
+        #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key] {
             background:
                 linear-gradient(180deg,
                     rgba(255, 255, 255, 0.16) 0%,
-                    rgba(255, 255, 255, 0.06) 100%);
-            color: #f5f7ff;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-bottom-color: rgba(255, 255, 255, 0.10);
-            border-radius: 9px;
+                    rgba(255, 255, 255, 0.06) 100%) !important;
+            color: #f5f7ff !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+            border-bottom-color: rgba(255, 255, 255, 0.10) !important;
+            border-radius: 9px !important;
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.20),
                 inset 0 -1px 0 rgba(0, 0, 0, 0.12),
-                0 2px 6px rgba(0, 0, 0, 0.20);
-            backdrop-filter: blur(10px) saturate(140%);
-            -webkit-backdrop-filter: blur(10px) saturate(140%);
-            height: 46px;
-            font-size: 15px;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-            transition: background .12s ease, transform .08s ease, box-shadow .12s ease;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
+                0 2px 6px rgba(0, 0, 0, 0.20) !important;
+            backdrop-filter: blur(10px) saturate(140%) !important;
+            -webkit-backdrop-filter: blur(10px) saturate(140%) !important;
+            height: 46px !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.02em !important;
+            transition: background .12s ease, transform .08s ease, box-shadow .12s ease !important;
+            -webkit-tap-highlight-color: transparent !important;
+            user-select: none !important;
         }
 
-        #simpleKeyboardWrapper .hg-theme-default .hg-button:hover {
+        #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key]:hover {
             background:
                 linear-gradient(180deg,
                     rgba(255, 255, 255, 0.24) 0%,
-                    rgba(255, 255, 255, 0.10) 100%);
+                    rgba(255, 255, 255, 0.10) 100%) !important;
         }
 
-        #simpleKeyboardWrapper .hg-theme-default .hg-button:active,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button.hg-activeButton {
+        #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key]:active {
             background:
                 linear-gradient(180deg,
                     rgba(255, 255, 255, 0.32) 0%,
-                    rgba(255, 255, 255, 0.14) 100%);
-            transform: translateY(1px);
+                    rgba(255, 255, 255, 0.14) 100%) !important;
+            transform: translateY(1px) !important;
             box-shadow:
                 inset 0 1px 2px rgba(0, 0, 0, 0.25),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.10);
+                inset 0 -1px 0 rgba(255, 255, 255, 0.10) !important;
         }
 
         /* Icon sizing */
-        #simpleKeyboardWrapper .hg-theme-default .hg-button i {
-            font-size: 16px;
-            line-height: 1;
-            pointer-events: none;
+        #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key] i {
+            font-size: 16px !important;
+            line-height: 1 !important;
+            pointer-events: none !important;
         }
 
         /* Special keys — slightly darker glass */
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-bksp,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-enter,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-shift,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-lock,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-tab {
+        #KioskBoard-VirtualKeyboard .kioskboard-key-backspace,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-enter,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-capslock,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-space {
             background:
                 linear-gradient(180deg,
                     rgba(255, 255, 255, 0.09) 0%,
-                    rgba(255, 255, 255, 0.03) 100%);
-            color: #d9e1ff;
+                    rgba(255, 255, 255, 0.03) 100%) !important;
+            color: #d9e1ff !important;
         }
 
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-bksp:hover,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-enter:hover,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-shift:hover,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-lock:hover,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-tab:hover {
+        #KioskBoard-VirtualKeyboard .kioskboard-key-backspace:hover,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-enter:hover,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-capslock:hover,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-space:hover {
             background:
                 linear-gradient(180deg,
                     rgba(255, 255, 255, 0.18) 0%,
-                    rgba(255, 255, 255, 0.07) 100%);
+                    rgba(255, 255, 255, 0.07) 100%) !important;
         }
 
         /* Cursor-control keys — subtle accent */
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-left,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-right,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-up,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-down,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-home,
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-end {
+        #KioskBoard-VirtualKeyboard .kioskboard-key-left,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-right,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-up,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-down,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-home,
+        #KioskBoard-VirtualKeyboard .kioskboard-key-end {
             background:
                 linear-gradient(180deg,
                     rgba(140, 170, 255, 0.18) 0%,
-                    rgba(120, 150, 240, 0.06) 100%);
-            border-color: rgba(160, 190, 255, 0.28);
-            color: #dfe8ff;
+                    rgba(120, 150, 240, 0.06) 100%) !important;
+            border-color: rgba(160, 190, 255, 0.28) !important;
+            color: #dfe8ff !important;
         }
 
         /* Space bar */
-        #simpleKeyboardWrapper .hg-theme-default .hg-button-space {
-            font-size: 12px;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: rgba(230, 236, 255, 0.75);
+        #KioskBoard-VirtualKeyboard .kioskboard-key-space {
+            font-size: 12px !important;
+            letter-spacing: 0.14em !important;
+            text-transform: uppercase !important;
+            color: rgba(230, 236, 255, 0.75) !important;
         }
 
         /* ---------- Close button (top-right of keyboard) ---------- */
-        #simpleKeyboardClose {
+        #kioskboardClose {
             position: absolute;
             top: 9px;
             right: 12px;
@@ -229,7 +193,7 @@
             justify-content: center;
             padding: 0;
             cursor: pointer;
-            z-index: 3;
+            z-index: 10;
 
             background:
                 linear-gradient(180deg,
@@ -246,12 +210,12 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        #simpleKeyboardClose i {
+        #kioskboardClose i {
             font-size: 15px;
             pointer-events: none;
         }
 
-        #simpleKeyboardClose:hover {
+        #kioskboardClose:hover {
             background:
                 linear-gradient(180deg,
                     rgba(255, 96, 96, 0.45) 0%,
@@ -260,65 +224,44 @@
             color: #fff;
         }
 
-        #simpleKeyboardClose:active {
+        #kioskboardClose:active {
             transform: scale(0.93);
-        }
-
-        /* Small label above the close button */
-        #simpleKeyboardWrapper .sk-close-label {
-            position: absolute;
-            top: 16px;
-            right: 58px;
-            font-size: 11px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: rgba(230, 236, 255, 0.55);
-            pointer-events: none;
-            z-index: 2;
         }
 
         /* ---------- Responsive ---------- */
         @media (max-width: 720px) {
-            #simpleKeyboardWrapper {
-                padding: 42px 8px 8px;
-                border-radius: 16px 16px 0 0;
+            #KioskBoard-VirtualKeyboard {
+                padding: 42px 8px 8px !important;
+                border-radius: 16px 16px 0 0 !important;
             }
 
-            #simpleKeyboardWrapper .hg-theme-default .hg-button {
-                height: 42px;
-                font-size: 14px;
-                border-radius: 8px;
+            #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key] {
+                height: 42px !important;
+                font-size: 14px !important;
+                border-radius: 8px !important;
             }
 
-            #simpleKeyboardWrapper .hg-theme-default .hg-button i {
-                font-size: 14px;
+            #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key] i {
+                font-size: 14px !important;
             }
 
-            #simpleKeyboardWrapper .hg-theme-default .hg-row:not(:last-child) {
-                margin-bottom: 6px;
-            }
-
-            #simpleKeyboardClose {
+            #kioskboardClose {
                 width: 34px;
                 height: 34px;
                 min-width: 34px;
                 top: 6px;
                 right: 8px;
             }
-
-            #simpleKeyboardWrapper .sk-close-label {
-                display: none;
-            }
         }
 
         @media (max-width: 420px) {
-            #simpleKeyboardWrapper .hg-theme-default .hg-button {
-                height: 38px;
-                font-size: 13px;
+            #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key] {
+                height: 38px !important;
+                font-size: 13px !important;
             }
 
-            #simpleKeyboardWrapper .hg-theme-default .hg-button i {
-                font-size: 13px;
+            #KioskBoard-VirtualKeyboard .kioskboard-row span[class^=kioskboard-key] i {
+                font-size: 13px !important;
             }
         }
     </style>
@@ -781,7 +724,7 @@
             <div class="menuicon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24">
                     <path fill="currentColor"
-                        d="M6.545 14.182c.6 0 1.109-.21 1.528-.627.436-.436.654-.954.654-1.555s-.218-1.109-.654-1.528a2.036 2.036 0 0 0-1.528-.654c-.6 0-1.118.218-1.555.654A2.079 2.079 0 0 0 4.363 12c0 .6.21 1.118.627 1.555.436.418.954.627 1.555.627zm0 4.363c-1.818 0-3.363-.636-4.636-1.909C.636 15.363 0 13.818 0 12s.636-3.363 1.909-4.637c1.273-1.272 2.818-1.908 4.636-1.908a6.39 6.39 0 0 1 3.409.954 6.22 6.22 0 0 1 2.4 2.59h9.464c.6 0 1.109.22 1.527.655.436.418.655.927.655 1.528v5.18c0 .6-.219 1.119-.655 1.556a2.079 2.079 0 0 1-1.527.627h-4.91a2.17 2.17 0 0 1-1.554-.627 2.17 2.17 0 0 1-.627-1.555v-1.364h-2.374a6.009 6.009 0 0 1-2.373 2.618 6.676 6.676 0 0 1-3.435.928Zm4.31-5.727h6.054v3.545h1.636v-1.364a.775.775 0 0 1 .219-.574.816.816 0 0 1 .6-.246.73.73 0 0 1 .573.246.73.73 0 0 1 .246.574v1.364h1.635v-5.181H10.855a4.336 4.336 0 0 0-1.528-2.537 4.193 4.193 0 0 0-2.782-1.008 4.202 4.202 0 0 0-3.081 1.281C2.61 9.772 2.182 10.8 2.182 12c0 1.2.428 2.228 1.282 3.081a4.202 4.202 0 0 0 3.081 1.282c1.055 0 1.982-.327 2.782-.982a4.461 4.461 0 0 0 1.528-2.563z" />
+                        d="M6.545 14.182c.6 0 1.109-.21 1.528-.627.436-.436.654-.954.654-1.555s-.218-1.109-.654-1.528a2.036 2.036 0 0 0-1.528-.654c-.6 0-1.118.218-1.555.654A2.079 2.079 0 0 0 4.363 12c0 .6.21 1.118.627 1.555.436.418.954.627 1.555.627zm0 4.363c-1.818 0-3.363-.636-4.636-1.909C.636 15.363 0 13.818 0 12s.636-3.363 1.909-4.637c1.273-1.272 2.818-1.908 4.636-1.908a6.39 6.39 0 0 1 3.409.954 6.22 6.22 0 0 1 2.4 2.59h9.464c.6 0 1.109.22 1.527.655.436.418.655.927.655 1.528v5.18c0 .6-.219 1.119-.655 1.556a2.079 2.079 0 0 1-1.527.627h-4.91a2.17 2.17 0 0 1-1.554-.627 2.17 2.17 0 0 1-.627-1.555v-1.364h-2.374a6.009 6.009 0 0 1-2.373 2.618 6.676 6.676 0 0 1-3.435.928Zm4.31-5.727h6.054v3.545h1.636v-1.364a.775.775 0 0 1 .219-.574.816.816 0 0 1 .6-.246.73.73 0 0 1 .573.246.73.73 0 0 1 .246.574v1.364h1.635v-5.181H10.855a4.336 4.336 0 0 0-1.528-2.537 4.193 4.193 0 0 0-2.782-1.008 4.202 4.202 0 0 0-3.081 1.281C2.61 9.772 2.182 10.8 2.182 12c0 1.2.428 2.228 1.282 3.081a4.202 4.202 0 0 0 3.081 1.282c1.055 0 1.982-.327 2.782-.982a4.461 4.461 0 0 1 1.528-2.563z" />
                 </svg>
             </div>
             <div class="label short one">Password ...</div>
@@ -2289,121 +2232,215 @@
     <div id="menuButton"></div>
     <!-- ending-of-body -->
 
-    <!-- ---------------- On-screen keyboard container ---------------- -->
-    <div id="simpleKeyboardWrapper" aria-hidden="true">
-        <span class="sk-close-label">Close</span>
-        <button id="simpleKeyboardClose" type="button" aria-label="Close on-screen keyboard">
-            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
-        <div class="simple-keyboard"></div>
-    </div>
-
-    <!-- ---------------- Simple Keyboard initialiser ---------------- -->
+    <!-- ---------------- KioskBoard initialiser ---------------- -->
     <script>
         (function () {
             'use strict';
 
             /* =========================================================
-               VALUE HELPERS (input + contenteditable)
+               INITIALISE KIOSKBOARD
                ========================================================= */
 
-            function getInputValue(el) {
-                if (el.isContentEditable) return el.textContent || '';
-                return el.value || '';
-            }
-
-            function dispatchInputEvents(el) {
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                el.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-
-            /* ---------- Insert text at the current cursor position ---------- */
-            function insertTextAtCursor(el, text) {
-                if (el.isContentEditable) {
-                    // Try execCommand first — preserves undo stack & selection
-                    var ok = false;
-                    try {
-                        ok = document.execCommand('insertText', false, text);
-                    } catch (e) { ok = false; }
-
-                    if (!ok) {
-                        // Fallback: manual range insertion
-                        var sel = window.getSelection();
-                        if (sel && sel.rangeCount) {
-                            var range = sel.getRangeAt(0);
-                            range.deleteContents();
-                            var node = document.createTextNode(text);
-                            range.insertNode(node);
-                            range.setStartAfter(node);
-                            range.setEndAfter(node);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }
-                    }
-                } else {
-                    var start = el.selectionStart != null ? el.selectionStart : el.value.length;
-                    var end = el.selectionEnd != null ? el.selectionEnd : el.value.length;
-                    var val = el.value;
-                    el.value = val.slice(0, start) + text + val.slice(end);
-                    var newPos = start + text.length;
-                    try { el.setSelectionRange(newPos, newPos); } catch (e) { /* noop */ }
-                }
-                dispatchInputEvents(el);
-            }
-
-            /* ---------- Backspace ---------- */
-            function handleBackspace(el) {
-                if (el.isContentEditable) {
-                    var ok = false;
-                    try { ok = document.execCommand('delete', false); } catch (e) { ok = false; }
-                    if (!ok) {
-                        var sel = window.getSelection();
-                        if (sel && sel.rangeCount) {
-                            var range = sel.getRangeAt(0);
-                            if (range.startOffset > 0) {
-                                range.setStart(range.startContainer, range.startOffset - 1);
-                                range.deleteContents();
-                            }
-                        }
-                    }
-                } else {
-                    var start = el.selectionStart != null ? el.selectionStart : 0;
-                    var end = el.selectionEnd != null ? el.selectionEnd : 0;
-                    var val = el.value;
-
-                    if (start === end) {
-                        if (start === 0) return;
-                        el.value = val.slice(0, start - 1) + val.slice(end);
-                        try { el.setSelectionRange(start - 1, start - 1); } catch (e) { /* noop */ }
-                    } else {
-                        el.value = val.slice(0, start) + val.slice(end);
-                        try { el.setSelectionRange(start, start); } catch (e) { /* noop */ }
-                    }
-                }
-                dispatchInputEvents(el);
-            }
-
-            /* ---------- Enter ---------- */
-            function handleEnter(el) {
-                if (el.isContentEditable) {
-                    insertTextAtCursor(el, '\n');
+            function initKioskBoard() {
+                if (typeof KioskBoard === 'undefined') {
+                    console.warn('[kioskboard] CDN not loaded — on-screen keyboard disabled.');
                     return;
                 }
-                var opts = {
-                    key: 'Enter', code: 'Enter', keyCode: 13, which: 13,
-                    bubbles: true, cancelable: true
-                };
-                el.dispatchEvent(new KeyboardEvent('keydown', opts));
-                el.dispatchEvent(new KeyboardEvent('keypress', opts));
-                el.dispatchEvent(new KeyboardEvent('keyup', opts));
+
+                /* ---------- 1. Configure KioskBoard ---------- */
+                KioskBoard.init({
+                    /* Use the built-in "all" layout (numbers, letters, special chars) */
+                    keysArrayOfObjects: null,
+                    keysJsonUrl: 'https://cdn.jsdelivr.net/npm/kioskboard@2.3.0/dist/kioskboard-keys-english.json',
+                    keysSpecialCharsArrayOfStrings: null,
+                    keysNumpadArrayOfNumbers: null,
+
+                    language: 'en',
+                    theme: 'material',          /* will be overridden by our glass CSS */
+                    autoScroll: false,
+                    capsLockActive: true,
+                    allowRealKeyboard: false,    /* disable physical keyboard */
+                    allowMobileKeyboard: false,  /* disable native mobile keyboard */
+                    cssAnimations: true,
+                    cssAnimationsDuration: 360,
+                    cssAnimationsStyle: 'slide',
+                    keysAllowSpacebar: true,
+                    keysSpacebarText: 'Space',
+                    keysFontFamily: 'sans-serif',
+                    keysFontSize: '15px',
+                    keysFontWeight: '500',
+                    keysIconSize: '16px',
+                    keysEnterText: 'Enter',
+                    keysEnterCallback: undefined,
+                    keysEnterCanClose: true
+                });
+
+                /* ---------- 2. Run on all inputmode="none" elements ---------- */
+                var selector = 'input[inputmode="none"], textarea[inputmode="none"]';
+                KioskBoard.run(selector);
+
+                /* ---------- 3. Handle contenteditable elements ---------- */
+                /*  KioskBoard only works with input/textarea.
+                    For contenteditable we create a hidden input,
+                    sync values, and run KioskBoard on that hidden input.  */
+                var contentEditableEls = document.querySelectorAll('[contenteditable="true"][inputmode="none"]');
+
+                contentEditableEls.forEach(function (editable) {
+                    /* Create hidden input */
+                    var hidden = document.createElement('input');
+                    hidden.type = 'text';
+                    hidden.inputMode = 'none';
+                    hidden.style.position = 'absolute';
+                    hidden.style.opacity = '0';
+                    hidden.style.pointerEvents = 'none';
+                    hidden.style.width = '0';
+                    hidden.style.height = '0';
+                    hidden.style.border = 'none';
+                    hidden.setAttribute('inputmode', 'none');
+
+                    /* Copy initial value */
+                    hidden.value = editable.textContent || '';
+
+                    /* Insert hidden input right after the editable */
+                    editable.parentNode.insertBefore(hidden, editable.nextSibling);
+
+                    /* Run KioskBoard on the hidden input */
+                    KioskBoard.run(hidden, {});
+
+                    /* Keep the editable in sync when the hidden input changes */
+                    hidden.addEventListener('input', function () {
+                        editable.textContent = hidden.value;
+                    });
+                    hidden.addEventListener('change', function () {
+                        editable.textContent = hidden.value;
+                    });
+
+                    /* When the editable is focused, focus the hidden input
+                       so KioskBoard appears */
+                    editable.addEventListener('focus', function () {
+                        hidden.value = editable.textContent || '';
+                        hidden.focus();
+                    });
+                });
+
+                /* ---------- 4. Inject close button + cursor keys after render ---------- */
+                var observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (m) {
+                        m.addedNodes.forEach(function (node) {
+                            if (node.nodeType === 1) {
+                                /* Keyboard container just appeared */
+                                if (node.id === 'KioskBoard-VirtualKeyboard') {
+                                    injectCloseButton(node);
+                                    injectCursorKeys(node);
+                                }
+                                /* Or a child was added inside it */
+                                if (node.closest && node.closest('#KioskBoard-VirtualKeyboard')) {
+                                    var kb = node.closest('#KioskBoard-VirtualKeyboard');
+                                    if (kb && !kb.querySelector('#kioskboardClose')) {
+                                        injectCloseButton(kb);
+                                        injectCursorKeys(kb);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                });
+
+                observer.observe(document.body, { childList: true, subtree: true });
             }
 
-            /* ---------- Tab ---------- */
-            function handleTab(el) {
-                insertTextAtCursor(el, '\t');
+            /* ---------- Inject close button ---------- */
+            function injectCloseButton(kb) {
+                if (kb.querySelector('#kioskboardClose')) return;
+
+                var btn = document.createElement('button');
+                btn.id = 'kioskboardClose';
+                btn.type = 'button';
+                btn.setAttribute('aria-label', 'Close on-screen keyboard');
+                btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+                btn.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    /* KioskBoard hides itself when the input blurs */
+                    var active = document.activeElement;
+                    if (active && active.blur) active.blur();
+                    kb.style.display = 'none';
+                });
+
+                kb.appendChild(btn);
             }
 
-            /* ---------- Cursor movement ---------- */
+            /* ---------- Inject a row of cursor-control keys ---------- */
+            function injectCursorKeys(kb) {
+                if (kb.querySelector('.kioskboard-cursor-row')) return;
+
+                var wrapper = kb.querySelector('.kioskboard-wrapper');
+                if (!wrapper) return;
+
+                var row = document.createElement('div');
+                row.className = 'kioskboard-row kioskboard-cursor-row';
+
+                var keys = [
+                    { id: 'home',  icon: 'fa-angles-left',  label: 'Home'  },
+                    { id: 'end',   icon: 'fa-angles-right', label: 'End'   },
+                    { id: 'left',  icon: 'fa-arrow-left',   label: 'Left'  },
+                    { id: 'up',    icon: 'fa-arrow-up',     label: 'Up'    },
+                    { id: 'down',  icon: 'fa-arrow-down',   label: 'Down'  },
+                    { id: 'right', icon: 'fa-arrow-right',  label: 'Right' }
+                ];
+
+                keys.forEach(function (k) {
+                    var span = document.createElement('span');
+                    span.className = 'kioskboard-key kioskboard-key-' + k.id;
+                    span.setAttribute('data-cursor', k.id);
+                    span.setAttribute('role', 'button');
+                    span.setAttribute('aria-label', k.label);
+                    span.innerHTML = '<i class="fa-solid ' + k.icon + '"></i>';
+
+                    /* Handle cursor movement */
+                    span.addEventListener('mousedown', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+
+                    span.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        var target = getActiveInput();
+                        if (!target) return;
+                        moveCursor(target, k.id);
+                    });
+
+                    row.appendChild(span);
+                });
+
+                wrapper.appendChild(row);
+            }
+
+            /* ---------- Helpers ---------- */
+
+            function getActiveInput() {
+                /* KioskBoard keeps a reference to the active element */
+                var kb = document.getElementById('KioskBoard-VirtualKeyboard');
+                if (!kb) return null;
+
+                /* Try the data attribute KioskBoard uses */
+                var active = document.querySelector('[data-kioskboard-active="true"]');
+                if (active) return active;
+
+                /* Fallback: use document.activeElement if it's an input/textarea */
+                var el = document.activeElement;
+                if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return el;
+
+                return null;
+            }
+
             function moveCursor(el, dir) {
                 if (!el) return;
 
@@ -2421,217 +2458,29 @@
                     return;
                 }
 
-                // Regular input / textarea
-                var val = el.value;
+                var val   = el.value || '';
                 var start = el.selectionStart != null ? el.selectionStart : 0;
-                var end = el.selectionEnd != null ? el.selectionEnd : 0;
-                var pos = start;
+                var end   = el.selectionEnd   != null ? el.selectionEnd   : 0;
+                var pos   = start;
 
                 if (dir === 'left')       pos = Math.max(0, start - 1);
                 else if (dir === 'right') pos = Math.min(val.length, end + 1);
                 else if (dir === 'home')  pos = 0;
                 else if (dir === 'end')   pos = val.length;
-                else return; // up/down not supported on single-line inputs
+                else return;
 
                 try { el.setSelectionRange(pos, pos); } catch (e) { /* noop */ }
             }
 
-            /* =========================================================
-               INITIALISATION
-               ========================================================= */
-
-            function initKeyboard() {
-                if (typeof SimpleKeyboard === 'undefined') {
-                    console.warn('[simple-keyboard] CDN not loaded — on-screen keyboard disabled.');
-                    return;
-                }
-
-                var wrapper    = document.getElementById('simpleKeyboardWrapper');
-                var container  = wrapper ? wrapper.querySelector('.simple-keyboard') : null;
-                var closeBtn   = document.getElementById('simpleKeyboardClose');
-                if (!wrapper || !container) return;
-
-                var SK = SimpleKeyboard.default || SimpleKeyboard;
-                var currentInput = null;
-                var hideTimer = null;
-
-                /* ---------- Build keyboard with full layout + FA icons ---------- */
-                var keyboard = new SK({
-                    /* We handle all input ourselves in onKeyPress */
-                    onChange: function () { /* no-op */ },
-
-                    onKeyPress: function (button) {
-                        if (!currentInput) return;
-
-                        /* Make sure the input keeps focus */
-                        if (document.activeElement !== currentInput) {
-                            try { currentInput.focus({ preventScroll: true }); } catch (e) { currentInput.focus(); }
-                        }
-
-                        /* ---- Cursor control ---- */
-                        if (button === '{left}')  { moveCursor(currentInput, 'left');  return; }
-                        if (button === '{right}') { moveCursor(currentInput, 'right'); return; }
-                        if (button === '{up}')    { moveCursor(currentInput, 'up');    return; }
-                        if (button === '{down}')  { moveCursor(currentInput, 'down');  return; }
-                        if (button === '{home}')  { moveCursor(currentInput, 'home');  return; }
-                        if (button === '{end}')   { moveCursor(currentInput, 'end');   return; }
-
-                        /* ---- Editing keys ---- */
-                        if (button === '{bksp}')  { handleBackspace(currentInput); return; }
-                        if (button === '{enter}') { handleEnter(currentInput);     return; }
-                        if (button === '{tab}')   { handleTab(currentInput);       return; }
-
-                        /* ---- Shift / Lock handled internally by simple-keyboard ---- */
-                        if (button === '{shift}' || button === '{lock}') return;
-
-                        /* ---- Space ---- */
-                        if (button === '{space}') { insertTextAtCursor(currentInput, ' '); return; }
-
-                        /* ---- Any other "{...}" button — ignore ---- */
-                        if (button.length > 1 && button.charAt(0) === '{' && button.charAt(button.length - 1) === '}') {
-                            return;
-                        }
-
-                        /* ---- Regular printable character ---- */
-                        insertTextAtCursor(currentInput, button);
-                    },
-
-                    theme: 'hg-theme-default',
-
-                    /* Full keyboard: numbers, letters, punctuation, editing + cursor keys */
-                    layout: {
-                        default: [
-                            '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
-                            '{tab} q w e r t y u i o p [ ] \\',
-                            '{lock} a s d f g h j k l ; \' {enter}',
-                            '{shift} z x c v b n m , . / {shift}',
-                            '{home} {end} {left} {up} {down} {right}',
-                            '{space}'
-                        ],
-                        shift: [
-                            '~ ! @ # $ % ^ & * ( ) _ + {bksp}',
-                            '{tab} Q W E R T Y U I O P { } |',
-                            '{lock} A S D F G H J K L : " {enter}',
-                            '{shift} Z X C V B N M < > ? {shift}',
-                            '{home} {end} {left} {up} {down} {right}',
-                            '{space}'
-                        ]
-                    },
-
-                    /* Font Awesome icons for special / navigation keys */
-                    display: {
-                        '{bksp}' : '<i class="fa-solid fa-delete-left"></i>',
-                        '{enter}': '<i class="fa-solid fa-arrow-turn-down"></i>',
-                        '{shift}': '<i class="fa-solid fa-arrow-up"></i>',
-                        '{lock}' : '<i class="fa-solid fa-lock"></i>',
-                        '{tab}'  : '<i class="fa-solid fa-arrow-right-to-bracket"></i>',
-                        '{home}' : '<i class="fa-solid fa-angles-left"></i>',
-                        '{end}'  : '<i class="fa-solid fa-angles-right"></i>',
-                        '{left}' : '<i class="fa-solid fa-arrow-left"></i>',
-                        '{right}': '<i class="fa-solid fa-arrow-right"></i>',
-                        '{up}'   : '<i class="fa-solid fa-arrow-up"></i>',
-                        '{down}' : '<i class="fa-solid fa-arrow-down"></i>',
-                        '{space}': 'Space'
-                    }
-                });
-
-                /* ---------- Show / hide ---------- */
-                function showKeyboard(el) {
-                    clearTimeout(hideTimer);
-                    currentInput = el;
-                    wrapper.classList.add('active');
-                    wrapper.setAttribute('aria-hidden', 'false');
-                    // Keep simple-keyboard's internal state tidy (cosmetic only)
-                    try { keyboard.setInput(getInputValue(el)); } catch (e) { /* noop */ }
-                }
-
-                function hideKeyboard() {
-                    currentInput = null;
-                    wrapper.classList.remove('active');
-                    wrapper.setAttribute('aria-hidden', 'true');
-                }
-
-                function scheduleHide() {
-                    clearTimeout(hideTimer);
-                    hideTimer = setTimeout(function () {
-                        if (document.activeElement === currentInput) return;
-                        if (wrapper.contains(document.activeElement)) return;
-                        hideKeyboard();
-                    }, 300);
-                }
-
-                /* ---------- Bind all matching inputs ---------- */
-                var selector = 'input[inputmode="none"], textarea[inputmode="none"], [contenteditable="true"][inputmode="none"]';
-
-                function bind(el) {
-                    if (el.dataset.skBound === '1') return;
-                    el.dataset.skBound = '1';
-
-                    el.addEventListener('focus', function () { showKeyboard(el); });
-                    el.addEventListener('blur',  scheduleHide);
-
-                    // Escape closes the keyboard while the input is focused
-                    el.addEventListener('keydown', function (e) {
-                        if (e.key === 'Escape') {
-                            e.preventDefault();
-                            hideKeyboard();
-                            if (el.blur) el.blur();
-                        }
-                    });
-                }
-
-                function bindAll() {
-                    document.querySelectorAll(selector).forEach(bind);
-                }
-
-                bindAll();
-
-                /* Watch for dynamically created inputs */
-                var mo = new MutationObserver(function () { bindAll(); });
-                mo.observe(document.body, { childList: true, subtree: true });
-
-                /* ---------- Keep focus on the input while tapping keys ---------- */
-
-                /* Desktop: prevent the input from losing focus when clicking keys */
-                wrapper.addEventListener('mousedown', function (e) {
-                    e.preventDefault();
-                });
-
-                /* Mobile: input can still blur — restore focus after each tap */
-                wrapper.addEventListener('click', function () {
-                    if (currentInput && document.activeElement !== currentInput) {
-                        try { currentInput.focus({ preventScroll: true }); } catch (e) { currentInput.focus(); }
-                    }
-                });
-
-                /* ---------- Close button ---------- */
-                if (closeBtn) {
-                    closeBtn.addEventListener('mousedown', function (e) {
-                        // Prevent focus loss before the click fires
-                        e.preventDefault();
-                        e.stopPropagation();
-                    });
-
-                    closeBtn.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        var el = currentInput;
-                        hideKeyboard();
-                        if (el && el.blur) {
-                            try { el.blur(); } catch (err) { /* noop */ }
-                        }
-                    });
-                }
-            }
-
+            /* ---------- Boot ---------- */
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initKeyboard);
+                document.addEventListener('DOMContentLoaded', initKioskBoard);
             } else {
-                initKeyboard();
+                initKioskBoard();
             }
         })();
     </script>
 
 </body>
 
-                     </html>
+     </html>

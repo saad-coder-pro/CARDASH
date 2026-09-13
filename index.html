@@ -22,8 +22,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
     <script defer src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
 
+    <!-- FONT AWESOME (Icons for keyboard keys) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
-        /* ---------- On-screen keyboard container ---------- */
+        /* =========================================================
+           ON-SCREEN KEYBOARD — GLASS THEME
+           ========================================================= */
+
         #simpleKeyboardWrapper {
             position: fixed;
             left: 0;
@@ -31,21 +37,75 @@
             bottom: 0;
             z-index: 2147483647;
             display: none;
-            padding: 6px;
+            padding: 46px 14px 14px;
             box-sizing: border-box;
-            background: rgba(20, 20, 20, 0.9);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+
+            /* Glass effect */
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.10) 0%,
+                    rgba(255, 255, 255, 0.02) 32%,
+                    rgba(20, 24, 38, 0.30) 100%),
+                rgba(18, 22, 34, 0.55);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-top: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 22px 22px 0 0;
+            box-shadow:
+                0 -12px 48px rgba(0, 0, 0, 0.45),
+                0 -2px 8px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        /* Glass shine layer */
+        #simpleKeyboardWrapper::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(120% 100% at 50% 0%,
+                    rgba(255, 255, 255, 0.12) 0%,
+                    rgba(255, 255, 255, 0.02) 45%,
+                    transparent 80%);
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        /* Subtle noise/highlight texture */
+        #simpleKeyboardWrapper::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.55) 50%,
+                    transparent 100%);
+            pointer-events: none;
         }
 
         #simpleKeyboardWrapper.active {
             display: block;
+            animation: skSlideUp 0.28s cubic-bezier(0.22, 0.9, 0.3, 1);
+        }
+
+        @keyframes skSlideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         #simpleKeyboardWrapper .simple-keyboard {
-            max-width: 960px;
+            max-width: 980px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         #simpleKeyboardWrapper .hg-theme-default {
@@ -54,30 +114,210 @@
         }
 
         #simpleKeyboardWrapper .hg-theme-default .hg-row:not(:last-child) {
-            margin-bottom: 6px;
+            margin-bottom: 7px;
         }
 
+        /* ---------- Glass keys ---------- */
         #simpleKeyboardWrapper .hg-theme-default .hg-button {
-            background: rgba(255, 255, 255, 0.14);
-            color: #fff;
-            border-bottom: none;
-            box-shadow: none;
-            height: 42px;
-            border-radius: 6px;
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.16) 0%,
+                    rgba(255, 255, 255, 0.06) 100%);
+            color: #f5f7ff;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-bottom-color: rgba(255, 255, 255, 0.10);
+            border-radius: 9px;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.20),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+                0 2px 6px rgba(0, 0, 0, 0.20);
+            backdrop-filter: blur(10px) saturate(140%);
+            -webkit-backdrop-filter: blur(10px) saturate(140%);
+            height: 46px;
             font-size: 15px;
             font-weight: 500;
+            letter-spacing: 0.02em;
+            transition: background .12s ease, transform .08s ease, box-shadow .12s ease;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        #simpleKeyboardWrapper .hg-theme-default .hg-button:hover {
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.24) 0%,
+                    rgba(255, 255, 255, 0.10) 100%);
         }
 
         #simpleKeyboardWrapper .hg-theme-default .hg-button:active,
         #simpleKeyboardWrapper .hg-theme-default .hg-button.hg-activeButton {
-            background: rgba(255, 255, 255, 0.32);
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.32) 0%,
+                    rgba(255, 255, 255, 0.14) 100%);
+            transform: translateY(1px);
+            box-shadow:
+                inset 0 1px 2px rgba(0, 0, 0, 0.25),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.10);
+        }
+
+        /* Icon sizing */
+        #simpleKeyboardWrapper .hg-theme-default .hg-button i {
+            font-size: 16px;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        /* Special keys — slightly darker glass */
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-bksp,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-enter,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-shift,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-lock,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-tab {
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.09) 0%,
+                    rgba(255, 255, 255, 0.03) 100%);
+            color: #d9e1ff;
+        }
+
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-bksp:hover,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-enter:hover,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-shift:hover,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-lock:hover,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-tab:hover {
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.18) 0%,
+                    rgba(255, 255, 255, 0.07) 100%);
+        }
+
+        /* Cursor-control keys — subtle accent */
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-left,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-right,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-up,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-down,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-home,
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-end {
+            background:
+                linear-gradient(180deg,
+                    rgba(140, 170, 255, 0.18) 0%,
+                    rgba(120, 150, 240, 0.06) 100%);
+            border-color: rgba(160, 190, 255, 0.28);
+            color: #dfe8ff;
+        }
+
+        /* Space bar */
+        #simpleKeyboardWrapper .hg-theme-default .hg-button-space {
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(230, 236, 255, 0.75);
+        }
+
+        /* ---------- Close button (top-right of keyboard) ---------- */
+        #simpleKeyboardClose {
+            position: absolute;
+            top: 9px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            cursor: pointer;
+            z-index: 3;
+
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, 0.18) 0%,
+                    rgba(255, 255, 255, 0.06) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            color: #f2f4ff;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.30),
+                0 2px 8px rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(10px) saturate(160%);
+            -webkit-backdrop-filter: blur(10px) saturate(160%);
+            transition: all .18s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #simpleKeyboardClose i {
+            font-size: 15px;
+            pointer-events: none;
+        }
+
+        #simpleKeyboardClose:hover {
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 96, 96, 0.45) 0%,
+                    rgba(220, 70, 70, 0.28) 100%);
+            border-color: rgba(255, 140, 140, 0.55);
             color: #fff;
         }
 
-        @media (max-width: 600px) {
+        #simpleKeyboardClose:active {
+            transform: scale(0.93);
+        }
+
+        /* Small label above the close button */
+        #simpleKeyboardWrapper .sk-close-label {
+            position: absolute;
+            top: 16px;
+            right: 58px;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(230, 236, 255, 0.55);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 720px) {
+            #simpleKeyboardWrapper {
+                padding: 42px 8px 8px;
+                border-radius: 16px 16px 0 0;
+            }
+
+            #simpleKeyboardWrapper .hg-theme-default .hg-button {
+                height: 42px;
+                font-size: 14px;
+                border-radius: 8px;
+            }
+
+            #simpleKeyboardWrapper .hg-theme-default .hg-button i {
+                font-size: 14px;
+            }
+
+            #simpleKeyboardWrapper .hg-theme-default .hg-row:not(:last-child) {
+                margin-bottom: 6px;
+            }
+
+            #simpleKeyboardClose {
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                top: 6px;
+                right: 8px;
+            }
+
+            #simpleKeyboardWrapper .sk-close-label {
+                display: none;
+            }
+        }
+
+        @media (max-width: 420px) {
             #simpleKeyboardWrapper .hg-theme-default .hg-button {
                 height: 38px;
+                font-size: 13px;
+            }
+
+            #simpleKeyboardWrapper .hg-theme-default .hg-button i {
                 font-size: 13px;
             }
         }
@@ -2051,69 +2291,221 @@
 
     <!-- ---------------- On-screen keyboard container ---------------- -->
     <div id="simpleKeyboardWrapper" aria-hidden="true">
+        <span class="sk-close-label">Close</span>
+        <button id="simpleKeyboardClose" type="button" aria-label="Close on-screen keyboard">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
         <div class="simple-keyboard"></div>
     </div>
 
     <!-- ---------------- Simple Keyboard initialiser ---------------- -->
     <script>
         (function () {
-            /* ---------- Value helpers (input + contenteditable) ---------- */
+            'use strict';
+
+            /* =========================================================
+               VALUE HELPERS (input + contenteditable)
+               ========================================================= */
+
             function getInputValue(el) {
                 if (el.isContentEditable) return el.textContent || '';
                 return el.value || '';
             }
 
-            function setInputValue(el, val) {
-                if (el.isContentEditable) {
-                    el.textContent = val;
-                } else {
-                    el.value = val;
-                }
+            function dispatchInputEvents(el) {
                 el.dispatchEvent(new Event('input', { bubbles: true }));
                 el.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
-            /* ---------- Init ---------- */
+            /* ---------- Insert text at the current cursor position ---------- */
+            function insertTextAtCursor(el, text) {
+                if (el.isContentEditable) {
+                    // Try execCommand first — preserves undo stack & selection
+                    var ok = false;
+                    try {
+                        ok = document.execCommand('insertText', false, text);
+                    } catch (e) { ok = false; }
+
+                    if (!ok) {
+                        // Fallback: manual range insertion
+                        var sel = window.getSelection();
+                        if (sel && sel.rangeCount) {
+                            var range = sel.getRangeAt(0);
+                            range.deleteContents();
+                            var node = document.createTextNode(text);
+                            range.insertNode(node);
+                            range.setStartAfter(node);
+                            range.setEndAfter(node);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                    }
+                } else {
+                    var start = el.selectionStart != null ? el.selectionStart : el.value.length;
+                    var end = el.selectionEnd != null ? el.selectionEnd : el.value.length;
+                    var val = el.value;
+                    el.value = val.slice(0, start) + text + val.slice(end);
+                    var newPos = start + text.length;
+                    try { el.setSelectionRange(newPos, newPos); } catch (e) { /* noop */ }
+                }
+                dispatchInputEvents(el);
+            }
+
+            /* ---------- Backspace ---------- */
+            function handleBackspace(el) {
+                if (el.isContentEditable) {
+                    var ok = false;
+                    try { ok = document.execCommand('delete', false); } catch (e) { ok = false; }
+                    if (!ok) {
+                        var sel = window.getSelection();
+                        if (sel && sel.rangeCount) {
+                            var range = sel.getRangeAt(0);
+                            if (range.startOffset > 0) {
+                                range.setStart(range.startContainer, range.startOffset - 1);
+                                range.deleteContents();
+                            }
+                        }
+                    }
+                } else {
+                    var start = el.selectionStart != null ? el.selectionStart : 0;
+                    var end = el.selectionEnd != null ? el.selectionEnd : 0;
+                    var val = el.value;
+
+                    if (start === end) {
+                        if (start === 0) return;
+                        el.value = val.slice(0, start - 1) + val.slice(end);
+                        try { el.setSelectionRange(start - 1, start - 1); } catch (e) { /* noop */ }
+                    } else {
+                        el.value = val.slice(0, start) + val.slice(end);
+                        try { el.setSelectionRange(start, start); } catch (e) { /* noop */ }
+                    }
+                }
+                dispatchInputEvents(el);
+            }
+
+            /* ---------- Enter ---------- */
+            function handleEnter(el) {
+                if (el.isContentEditable) {
+                    insertTextAtCursor(el, '\n');
+                    return;
+                }
+                var opts = {
+                    key: 'Enter', code: 'Enter', keyCode: 13, which: 13,
+                    bubbles: true, cancelable: true
+                };
+                el.dispatchEvent(new KeyboardEvent('keydown', opts));
+                el.dispatchEvent(new KeyboardEvent('keypress', opts));
+                el.dispatchEvent(new KeyboardEvent('keyup', opts));
+            }
+
+            /* ---------- Tab ---------- */
+            function handleTab(el) {
+                insertTextAtCursor(el, '\t');
+            }
+
+            /* ---------- Cursor movement ---------- */
+            function moveCursor(el, dir) {
+                if (!el) return;
+
+                if (el.isContentEditable) {
+                    var sel = window.getSelection();
+                    if (!sel) return;
+                    try {
+                        if (dir === 'left')       sel.modify('move', 'backward', 'character');
+                        else if (dir === 'right') sel.modify('move', 'forward', 'character');
+                        else if (dir === 'up')    sel.modify('move', 'backward', 'line');
+                        else if (dir === 'down')  sel.modify('move', 'forward', 'line');
+                        else if (dir === 'home')  sel.modify('move', 'backward', 'lineboundary');
+                        else if (dir === 'end')   sel.modify('move', 'forward', 'lineboundary');
+                    } catch (e) { /* noop */ }
+                    return;
+                }
+
+                // Regular input / textarea
+                var val = el.value;
+                var start = el.selectionStart != null ? el.selectionStart : 0;
+                var end = el.selectionEnd != null ? el.selectionEnd : 0;
+                var pos = start;
+
+                if (dir === 'left')       pos = Math.max(0, start - 1);
+                else if (dir === 'right') pos = Math.min(val.length, end + 1);
+                else if (dir === 'home')  pos = 0;
+                else if (dir === 'end')   pos = val.length;
+                else return; // up/down not supported on single-line inputs
+
+                try { el.setSelectionRange(pos, pos); } catch (e) { /* noop */ }
+            }
+
+            /* =========================================================
+               INITIALISATION
+               ========================================================= */
+
             function initKeyboard() {
                 if (typeof SimpleKeyboard === 'undefined') {
                     console.warn('[simple-keyboard] CDN not loaded — on-screen keyboard disabled.');
                     return;
                 }
 
-                var wrapper = document.getElementById('simpleKeyboardWrapper');
-                var container = wrapper ? wrapper.querySelector('.simple-keyboard') : null;
+                var wrapper    = document.getElementById('simpleKeyboardWrapper');
+                var container  = wrapper ? wrapper.querySelector('.simple-keyboard') : null;
+                var closeBtn   = document.getElementById('simpleKeyboardClose');
                 if (!wrapper || !container) return;
 
                 var SK = SimpleKeyboard.default || SimpleKeyboard;
                 var currentInput = null;
                 var hideTimer = null;
 
-                /* ---------- Build keyboard ---------- */
+                /* ---------- Build keyboard with full layout + FA icons ---------- */
                 var keyboard = new SK({
-                    onChange: function (input) {
-                        if (currentInput) setInputValue(currentInput, input);
-                    },
+                    /* We handle all input ourselves in onKeyPress */
+                    onChange: function () { /* no-op */ },
+
                     onKeyPress: function (button) {
                         if (!currentInput) return;
-                        if (button === '{enter}') {
-                            var ev = new KeyboardEvent('keydown', {
-                                key: 'Enter',
-                                code: 'Enter',
-                                keyCode: 13,
-                                which: 13,
-                                bubbles: true,
-                                cancelable: true
-                            });
-                            currentInput.dispatchEvent(ev);
+
+                        /* Make sure the input keeps focus */
+                        if (document.activeElement !== currentInput) {
+                            try { currentInput.focus({ preventScroll: true }); } catch (e) { currentInput.focus(); }
                         }
+
+                        /* ---- Cursor control ---- */
+                        if (button === '{left}')  { moveCursor(currentInput, 'left');  return; }
+                        if (button === '{right}') { moveCursor(currentInput, 'right'); return; }
+                        if (button === '{up}')    { moveCursor(currentInput, 'up');    return; }
+                        if (button === '{down}')  { moveCursor(currentInput, 'down');  return; }
+                        if (button === '{home}')  { moveCursor(currentInput, 'home');  return; }
+                        if (button === '{end}')   { moveCursor(currentInput, 'end');   return; }
+
+                        /* ---- Editing keys ---- */
+                        if (button === '{bksp}')  { handleBackspace(currentInput); return; }
+                        if (button === '{enter}') { handleEnter(currentInput);     return; }
+                        if (button === '{tab}')   { handleTab(currentInput);       return; }
+
+                        /* ---- Shift / Lock handled internally by simple-keyboard ---- */
+                        if (button === '{shift}' || button === '{lock}') return;
+
+                        /* ---- Space ---- */
+                        if (button === '{space}') { insertTextAtCursor(currentInput, ' '); return; }
+
+                        /* ---- Any other "{...}" button — ignore ---- */
+                        if (button.length > 1 && button.charAt(0) === '{' && button.charAt(button.length - 1) === '}') {
+                            return;
+                        }
+
+                        /* ---- Regular printable character ---- */
+                        insertTextAtCursor(currentInput, button);
                     },
+
                     theme: 'hg-theme-default',
+
+                    /* Full keyboard: numbers, letters, punctuation, editing + cursor keys */
                     layout: {
                         default: [
                             '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
                             '{tab} q w e r t y u i o p [ ] \\',
-                            "{lock} a s d f g h j k l ; ' {enter}",
+                            '{lock} a s d f g h j k l ; \' {enter}',
                             '{shift} z x c v b n m , . / {shift}',
+                            '{home} {end} {left} {up} {down} {right}',
                             '{space}'
                         ],
                         shift: [
@@ -2121,16 +2513,25 @@
                             '{tab} Q W E R T Y U I O P { } |',
                             '{lock} A S D F G H J K L : " {enter}',
                             '{shift} Z X C V B N M < > ? {shift}',
+                            '{home} {end} {left} {up} {down} {right}',
                             '{space}'
                         ]
                     },
+
+                    /* Font Awesome icons for special / navigation keys */
                     display: {
-                        '{bksp}': '⌫',
-                        '{enter}': '⏎',
-                        '{shift}': '⇧',
-                        '{lock}': '⇪',
-                        '{tab}': '⇥',
-                        '{space}': 'space'
+                        '{bksp}' : '<i class="fa-solid fa-delete-left"></i>',
+                        '{enter}': '<i class="fa-solid fa-arrow-turn-down"></i>',
+                        '{shift}': '<i class="fa-solid fa-arrow-up"></i>',
+                        '{lock}' : '<i class="fa-solid fa-lock"></i>',
+                        '{tab}'  : '<i class="fa-solid fa-arrow-right-to-bracket"></i>',
+                        '{home}' : '<i class="fa-solid fa-angles-left"></i>',
+                        '{end}'  : '<i class="fa-solid fa-angles-right"></i>',
+                        '{left}' : '<i class="fa-solid fa-arrow-left"></i>',
+                        '{right}': '<i class="fa-solid fa-arrow-right"></i>',
+                        '{up}'   : '<i class="fa-solid fa-arrow-up"></i>',
+                        '{down}' : '<i class="fa-solid fa-arrow-down"></i>',
+                        '{space}': 'Space'
                     }
                 });
 
@@ -2140,6 +2541,7 @@
                     currentInput = el;
                     wrapper.classList.add('active');
                     wrapper.setAttribute('aria-hidden', 'false');
+                    // Keep simple-keyboard's internal state tidy (cosmetic only)
                     try { keyboard.setInput(getInputValue(el)); } catch (e) { /* noop */ }
                 }
 
@@ -2164,8 +2566,18 @@
                 function bind(el) {
                     if (el.dataset.skBound === '1') return;
                     el.dataset.skBound = '1';
+
                     el.addEventListener('focus', function () { showKeyboard(el); });
-                    el.addEventListener('blur', scheduleHide);
+                    el.addEventListener('blur',  scheduleHide);
+
+                    // Escape closes the keyboard while the input is focused
+                    el.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') {
+                            e.preventDefault();
+                            hideKeyboard();
+                            if (el.blur) el.blur();
+                        }
+                    });
                 }
 
                 function bindAll() {
@@ -2174,23 +2586,42 @@
 
                 bindAll();
 
-                /* Watch for dynamically created inputs (shortcut editor, etc.) */
+                /* Watch for dynamically created inputs */
                 var mo = new MutationObserver(function () { bindAll(); });
                 mo.observe(document.body, { childList: true, subtree: true });
 
-                /* ---------- Keep focus on the input ---------- */
+                /* ---------- Keep focus on the input while tapping keys ---------- */
 
                 /* Desktop: prevent the input from losing focus when clicking keys */
                 wrapper.addEventListener('mousedown', function (e) {
                     e.preventDefault();
                 });
 
-                /* Mobile: the input can still blur — restore focus after each tap */
+                /* Mobile: input can still blur — restore focus after each tap */
                 wrapper.addEventListener('click', function () {
                     if (currentInput && document.activeElement !== currentInput) {
                         try { currentInput.focus({ preventScroll: true }); } catch (e) { currentInput.focus(); }
                     }
                 });
+
+                /* ---------- Close button ---------- */
+                if (closeBtn) {
+                    closeBtn.addEventListener('mousedown', function (e) {
+                        // Prevent focus loss before the click fires
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+
+                    closeBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        var el = currentInput;
+                        hideKeyboard();
+                        if (el && el.blur) {
+                            try { el.blur(); } catch (err) { /* noop */ }
+                        }
+                    });
+                }
             }
 
             if (document.readyState === 'loading') {
@@ -2203,4 +2634,4 @@
 
 </body>
 
-         </html>
+                     </html>

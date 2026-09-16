@@ -14,6 +14,11 @@
     var STO = { height: "vk.height", iconPack: "vk.iconPack", keyColor: "vk.keyColor", kbColor: "vk.kbColor", autoHeight: "vk.autoHeight" };
     var settings = { height: DEF.height, iconPack: DEF.iconPack, keyColor: DEF.keyColor, kbColor: DEF.kbColor, autoHeight: DEF.autoHeight };
 
+    /* System keyboard mode flags — shared across all closures */
+    var systemKbActive = false;
+    var systemKbInput = null;
+    var transitioningToSystem = false;
+
     var ICONS = {
         fa: {
             "{bksp}":  '<i class="fa-solid fa-delete-left"></i>',
@@ -123,6 +128,14 @@
             '.kb-icon-btn:hover{background:rgba(255,255,255,.08)}.kb-icon-btn:active{transform:scale(.9)}' +
             '.kb-settings-btn.active{background:rgba(10,132,255,.22);border-color:rgba(10,132,255,.6);color:#4fa8ff;' +
             'box-shadow:0 0 0 1px rgba(10,132,255,.35),0 0 18px rgba(10,132,255,.4),inset 0 1px 0 rgba(255,255,255,.25)}' +
+            /* System keyboard toggle button */
+            '.kb-system-kb-btn{position:relative}' +
+            '.kb-system-kb-btn.active{background:rgba(255,159,10,.22);border-color:rgba(255,159,10,.65);color:#ffb340;' +
+            'box-shadow:0 0 0 1px rgba(255,159,10,.35),0 0 18px rgba(255,159,10,.45),inset 0 1px 0 rgba(255,255,255,.25)}' +
+            '.kb-system-kb-btn.active::after{content:"";position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;' +
+            'background:#ff9f0a;box-shadow:0 0 6px rgba(255,159,10,.95),0 0 12px rgba(255,159,10,.6);' +
+            'animation:vkSysPulse 1.6s ease-in-out infinite;pointer-events:none}' +
+            '@keyframes vkSysPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}' +
             '.kb-close:hover{background:rgba(255,69,58,.18);border-color:rgba(255,69,58,.55);color:#ff8a80}' +
 
             '.kb-wrap .simple-keyboard{position:relative;z-index:5;width:100%;flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}' +
@@ -222,6 +235,17 @@
         wrap.innerHTML =
             '<div class="kb-wrap" id="kbWrap">' +
               '<div class="kb-header">' +
+                /* NEW: System keyboard toggle button */
+                '<button class="kb-icon-btn kb-system-kb-btn" id="kbSystemKbBtn" type="button" aria-label="Use system keyboard" title="Use system keyboard once">' +
+                  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<rect x="2" y="6" width="20" height="12" rx="2"></rect>' +
+                    '<line x1="6" y1="10" x2="6" y2="10"></line>' +
+                    '<line x1="10" y1="10" x2="10" y2="10"></line>' +
+                    '<line x1="14" y1="10" x2="14" y2="10"></line>' +
+                    '<line x1="18" y1="10" x2="18" y2="10"></line>' +
+                    '<line x1="8" y1="14" x2="16" y2="14"></line>' +
+                  '</svg>' +
+                '</button>' +
                 '<button class="kb-icon-btn kb-settings-btn" id="kbSettingsBtn" type="button" aria-label="Keyboard settings">' +
                   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
                     '<circle cx="12" cy="12" r="3"/>' +
@@ -336,6 +360,8 @@
             var kbWrap = document.getElementById("kbWrap");
             document.querySelectorAll(EDITABLE_SELECTOR).forEach(function (el) {
                 if (kbWrap && kbWrap.contains(el)) return;
+                // Skip the input currently using system keyboard
+                if (systemKbActive && el === systemKbInput) return;
                 el.setAttribute("inputmode", "none");
                 el.setAttribute("autocorrect", "off");
                 el.setAttribute("autocapitalize", "off");
@@ -355,6 +381,9 @@
             document.addEventListener("focusin", function (e) {
                 var el = e.target;
                 if (!isEditableEl(el)) return;
+                // Skip the readOnly dance when using system keyboard
+                if (systemKbActive && el === systemKbInput) return;
+                if (transitioningToSystem) return;
                 var wasRO = el.readOnly;
                 try { el.readOnly = true; } catch (err) { }
                 setTimeout(function () { try { el.readOnly = wasRO; } catch (err) { } }, 0);
@@ -393,6 +422,7 @@
         var kbWrap = document.getElementById("kbWrap");
         var kbClose = document.getElementById("kbClose");
         var kbSettingsBtn = document.getElementById("kbSettingsBtn");
+        var kbSystemKbBtn = document.getElementById("kbSystemKbBtn");
         var kbSettingsOverlay = document.getElementById("kbSettingsOverlay");
         var kbSettingsBack = document.getElementById("kbSettingsBack");
         var kbAdjustHeightBtn = document.getElementById("kbAdjustHeightBtn");
@@ -443,7 +473,7 @@
         var letterLayout = "default";
         var keyboard = null;
         var isRebuilding = false;
-        var suppressRefocus = false;   // <-- set true when we intentionally close
+        var suppressRefocus = false;
 
         function handleChange(input) {
             if (!currentInput) return;
@@ -510,12 +540,91 @@
             kbWrap.classList.add("open");
         }
         function hideKeyboard() {
-            // suppress the focusout refocus BEFORE we close
             suppressRefocus = true;
             kbWrap.classList.remove("open");
-            // release the suppress flag next tick, after focusout's setTimeout runs
             setTimeout(function () { suppressRefocus = false; }, 250);
         }
+
+        /* ============================================================
+           SYSTEM KEYBOARD TOGGLE
+           ============================================================ */
+        function updateSystemKbBtnState() {
+            if (systemKbActive) kbSystemKbBtn.classList.add("active");
+            else kbSystemKbBtn.classList.remove("active");
+        }
+
+        function useSystemKeyboard() {
+            if (!currentInput) return;
+            var el = currentInput;
+
+            systemKbActive = true;
+            systemKbInput = el;
+            transitioningToSystem = true;
+            updateSystemKbBtnState();
+
+            // Remove virtual keyboard restriction on this input
+            try {
+                el.removeAttribute("virtualkeyboardpolicy");
+                el.removeAttribute("readonly");
+                el.setAttribute("inputmode", "text");
+                el.setAttribute("autocorrect", "on");
+                el.setAttribute("autocapitalize", "sentences");
+                el.setAttribute("spellcheck", "true");
+            } catch(e){}
+
+            // Hide the virtual keyboard
+            hideKeyboard();
+
+            // Blur then refocus so the OS shows its own keyboard
+            try { el.blur(); } catch(e){}
+
+            setTimeout(function(){
+                try { el.focus(); } catch(e){}
+                transitioningToSystem = false;
+            }, 90);
+        }
+
+        function resetSystemKeyboard() {
+            if (!systemKbActive) return;
+            var el = systemKbInput;
+            systemKbActive = false;
+            systemKbInput = null;
+            updateSystemKbBtnState();
+
+            if (el) {
+                try {
+                    el.setAttribute("inputmode", "none");
+                    el.setAttribute("autocorrect", "off");
+                    el.setAttribute("autocapitalize", "off");
+                    el.setAttribute("spellcheck", "false");
+                    el.setAttribute("virtualkeyboardpolicy", "manual");
+                } catch(e){}
+            }
+        }
+
+        /* --- Button click: switch to system keyboard --- */
+        kbSystemKbBtn.addEventListener("pointerdown", function(e){
+            // Prevent the button from stealing focus from the input
+            e.preventDefault();
+        });
+        kbSystemKbBtn.addEventListener("click", function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            if (systemKbActive) {
+                // Toggle back: reset and reopen virtual keyboard
+                resetSystemKeyboard();
+                if (currentInput) {
+                    try { currentInput.blur(); } catch(err){}
+                    setTimeout(function(){
+                        if (currentInput) {
+                            try { currentInput.focus(); } catch(err){}
+                        }
+                    }, 60);
+                }
+            } else {
+                useSystemKeyboard();
+            }
+        });
 
         /* ---------- REPEAT ENGINE ---------- */
         var REPEAT_DELAY = 400, REPEAT_RATE = 50;
@@ -821,16 +930,13 @@
         });
 
         /* ---------- Close Button ---------- */
-        // Stop the button from stealing focus / scrolling the page
-        kbClose.addEventListener("pointerdown", function (e) {
-            e.preventDefault();
-        });
+        kbClose.addEventListener("pointerdown", function (e) { e.preventDefault(); });
         kbClose.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
             stopAllRepeats();
+            resetSystemKeyboard();
             hideKeyboard();
-            // Blur the input AFTER we suppress refocus
             setTimeout(function () {
                 if (document.activeElement && document.activeElement.blur) {
                     try { document.activeElement.blur(); } catch (err) { }
@@ -838,13 +944,26 @@
             }, 0);
         });
 
-        /* ---------- FOCUS → SHOW KEYBOARD ---------- */
+        /* ============================================================
+           FOCUS HANDLERS
+           ============================================================ */
         document.addEventListener("focusin", function (e) {
             var el = e.target;
             if (!isEditableEl(el)) return;
             if (kbWrap.contains(el)) return;
-            // skip if we're in the middle of closing
             if (suppressRefocus) return;
+
+            // If we're mid-transition to the system keyboard, skip
+            if (transitioningToSystem) return;
+
+            // If system keyboard mode is active on the same input, skip
+            if (systemKbActive && el === systemKbInput) return;
+
+            // If system keyboard mode is active but focus moved to a
+            // different field, reset system mode and continue normally
+            if (systemKbActive && el !== systemKbInput) {
+                resetSystemKeyboard();
+            }
 
             currentInput = el;
             keyboard.setInput(getVal(el));
@@ -852,6 +971,7 @@
 
             setTimeout(function () {
                 if (suppressRefocus) return;
+                if (systemKbActive) return;
                 var rect = el.getBoundingClientRect();
                 var kbH = kbWrap.offsetHeight || 300;
                 var kbTop = window.innerHeight - kbH;
@@ -866,16 +986,33 @@
         document.addEventListener("focusout", function (e) {
             var el = e.target;
             if (!isEditableEl(el)) return;
+
+            // System keyboard input loses focus — decide whether to reset
+            if (systemKbActive && el === systemKbInput) {
+                setTimeout(function(){
+                    if (!systemKbActive) return;
+                    var a = document.activeElement;
+                    if (a === document.body || a === document.documentElement || a === null) {
+                        resetSystemKeyboard();
+                    } else if (!isEditableEl(a) && !kbWrap.contains(a)) {
+                        resetSystemKeyboard();
+                    }
+                    // If focus went to another editable, the focusin handler
+                    // will call resetSystemKeyboard() when it fires
+                }, 0);
+                return; // never refocus while system keyboard is active
+            }
+
             if (el !== currentInput) return;
             if (!kbWrap.classList.contains("open")) return;
             if (kbWrap.classList.contains("resizing")) return;
 
             setTimeout(function () {
-                // Skip everything if a close is in progress or the keyboard is already closed
                 if (suppressRefocus) return;
                 if (!kbWrap.classList.contains("open")) return;
                 if (kbSettingsOverlay.classList.contains("open")) return;
                 if (kbWrap.contains(document.activeElement)) return;
+                if (systemKbActive) return;
 
                 var a = document.activeElement;
                 if (a === document.body || a === document.documentElement || a === null) {
@@ -887,6 +1024,8 @@
         document.addEventListener("input", function (e) {
             var el = e.target;
             if (el === currentInput && isEditableEl(el)) {
+                // Don't sync virtual keyboard state while system keyboard is active
+                if (systemKbActive && el === systemKbInput) return;
                 keyboard.setInput(getVal(el));
             }
         });
@@ -911,10 +1050,11 @@
         /* ---------- Physical keyboard mirror ---------- */
         document.addEventListener("keydown", function () {
             if (!currentInput) return;
+            if (systemKbActive && currentInput === systemKbInput) return;
             setTimeout(function () { keyboard.setInput(getVal(currentInput)); }, 0);
         });
 
-        /* ---------- Scroll guard (allow scroll inside overlays) ---------- */
+        /* ---------- Scroll guard ---------- */
         document.addEventListener("touchmove", function (e) {
             if (e.target.closest("textarea")) return;
             if (e.target.closest(".kb-settings-overlay")) return;
@@ -927,6 +1067,7 @@
         if (settings.autoHeight) applyAutoHeight(true);
         else applyHeightPx(settings.height);
         updateSettingsUI();
+        updateSystemKbBtnState();
 
         console.log("[vk] ready ✔");
     }

@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a12">
+<title>App Grid</title>
+
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
+<script defer src="keyboard.js"></script>
+
+<style>
+:root{
+  --bg:#0a0a12;
+  --text:#ffffff;
+  --muted:rgba(255,255,255,.55);
+  --accent:#ff9f0a;
+  --accent-2:#ffb340;
+  --accent-shadow:rgba(255,159,10,.55);
+  --danger:#ff453a;
+  --glass-bg: linear-gradient(135deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.05) 55%, rgba(255,255,255,.02) 100%);
+  --glass-border: rgba(255,255,255,.16);
+  --glass-blur: 32px;
+  --radius-lg: 28px;
+  --radius-md: 22px;
+  --radius-sm: 14px;
+  --font: ui-rounded,"SF Pro Rounded","SF Compact Rounded",-apple-system,BlinkMacSystemFont,"Nunito","Segoe UI Variable Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html{
+  background:var(--bg);
+  transition: background .4s ease;
+}
+
+body{
+  margin:0; padding:0;
+  background:transparent;
+  color:var(--text);
+  font-family:var(--font);
+  font-weight:700;
+  letter-spacing:-.01em;
+  min-height:100vh;
+  min-height:100dvh;
+  overflow-x:hidden;
+  overscroll-behavior-y:none;
+}
+
+/* ---------- BACKGROUND LAYERS ---------- */
+#bgLayer{
+  position:fixed; inset:0;
+  z-index:-3;
+  background:var(--bg);
+  transition: background .4s ease;
+}
+#bgOverlay{
+  position:fixed; inset:0;
+  z-index:-2;
+  pointer-events:none;
+  background:
+    radial-gradient(1000px 700px at 12% -8%, rgba(10,132,255,.15), transparent 60%),
+    radial-gradient(900px 700px at 92% 108%, rgba(191,90,242,.12), transparent 60%),
+    radial-gradient(700px 500px at 100% 0%, rgba(255,159,10,.08), transparent 60%);
+}
+#wallpaperLayer{
+  position:fixed; inset:0;
+  z-index:-1;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  opacity:0;
+  transition:opacity .5s ease;
+  pointer-events:none;
+  will-change: opacity;
+}
+
+/* ---------- GLASS ---------- */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border:1px solid var(--glass-border);
+  box-shadow:
+    0 20px 45px -20px rgba(0,0,0,.6),
+    0 4px 12px -2px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -1px 0 rgba(255,255,255,.04);
+  position:relative;
+  isolation:isolate;
+}
+.glass::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:inherit;
+  background:linear-gradient(180deg, rgba(255,255,255,.10) 0%, transparent 32%);
+  pointer-events:none;
+  z-index:0;
+}
+.glass > *{ position:relative; z-index:1; }
+
+/* ---------- LAYOUT ---------- */
+.wrap{
+  max-width:1440px;
+  margin:0 auto;
+  padding: max(20px, env(safe-area-inset-top)) 0 140px;
+  position:relative;
+}
+
+/* ---------- HEADER ---------- */
+header.app-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding: 10px 26px 26px;
+}
+header.app-header h1{
+  margin:0;
+  font-size:32px;
+  font-weight:900;
+  letter-spacing:-.03em;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+header.app-header h1 i{
+  color:var(--accent);
+  font-size:26px;
+}
+.header-actions{ display:flex; align-items:center; gap:12px; }
+
+.icon-btn{
+  width:48px; height:48px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  color:var(--text);
+  font-size:18px;
+  cursor:pointer;
+  padding:0;
+  box-shadow:
+    0 10px 24px -12px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.24);
+  transition: transform .14s ease, background .18s ease, color .18s ease;
+  -webkit-tap-highlight-color:transparent;
+  touch-action: manipulation;
+}
+.icon-btn:hover{ background: rgba(255,255,255,.14); }
+.icon-btn:active{ transform: scale(.92); }
+.icon-btn.primary{
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 100%);
+  border-color: rgba(255,255,255,.35);
+  box-shadow: 0 12px 30px -10px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,.5);
+  color:#1a1000;
+  font-weight:900;
+}
+.icon-btn.primary:hover{ background: linear-gradient(180deg, #ffc266 0%, #ffa826 100%); }
+.icon-btn.primary i{
+  color:#1a1000;
+  text-shadow: 0 1px 0 rgba(255,255,255,.25);
+}
+
+/* ---------- GRID ---------- */
+#grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap:18px;
+  padding: 0 26px;
+}
+@media (max-width:720px){
+  #grid{ grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap:14px; padding: 0 20px; }
+}
+@media (max-width:520px){
+  #grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:12px; padding: 0 16px; }
+  header.app-header{ padding: 8px 16px 22px; }
+  header.app-header h1{ font-size:26px; }
+  .icon-btn{ width:44px; height:44px; font-size:17px; }
+}
+@media (max-width:380px){
+  #grid{ grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap:10px; padding: 0 12px; }
+}
+
+/* ---------- TILE ---------- */
+.tile{
+  height: 210px;
+  border-radius: var(--radius-md);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  padding: 20px 16px;
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .18s ease, background .2s ease;
+  position:relative;
+  overflow:hidden;
+  will-change: transform;
+}
+.tile::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 42%);
+  pointer-events:none;
+  opacity:.6;
+  transition: opacity .2s ease;
+}
+.tile:hover{
+  transform: translateY(-4px);
+  box-shadow:
+    0 28px 60px -22px rgba(0,0,0,.7),
+    0 8px 20px -6px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.35),
+    inset 0 -1px 0 rgba(255,255,255,.06);
+}
+.tile:hover::after{ opacity:.85; }
+.tile:active{ transform: scale(.965); }
+.tile.pressing{ transform: scale(.94); }
+
+.tile-icon{
+  width:80px;
+  height:80px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 20px;
+  font-size: 42px;
+  color: var(--text);
+  background: rgba(255,255,255,.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+  position:relative;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.tile-icon i{
+  font-size: 40px;
+  line-height: 1;
+  display:inline-flex;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,.35);
+}
+.tile-icon-crop{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  border-radius: inherit;
+}
+.tile-icon-crop img{
+  position:absolute;
+  display:block;
+  max-width:none;
+  max-height:none;
+  pointer-events:none;
+  -webkit-user-drag:none;
+  user-select:none;
+}
+.tile-name{
+  font-size:14.5px;
+  font-weight:800;
+  text-align:center;
+  color:var(--text);
+  max-width: 100%;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  letter-spacing:-.005em;
+  width: 100%;
+}
+
+/* ---------- EMPTY STATE ---------- */
+#emptyState{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  padding: 100px 24px;
+  text-align:center;
+  color: var(--muted);
+}
+#emptyState .eicon{
+  width: 96px; height: 96px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255,159,10,.20) 0%, rgba(255,159,10,.06) 100%);
+  border: 1px solid rgba(255,159,10,.3);
+  box-shadow:
+    0 20px 40px -18px rgba(255,159,10,.45),
+    inset 0 1px 0 rgba(255,255,255,.2);
+  color: var(--accent);
+  font-size: 46px;
+  margin-bottom: 6px;
+}
+#emptyState .etitle{
+  font-size:22px;
+  font-weight:900;
+  color: var(--text);
+  letter-spacing:-.02em;
+}
+#emptyState .esub{
+  font-size:14.5px;
+  font-weight:700;
+  max-width:380px;
+  line-height:1.55;
+}
+#emptyState .ebtn{
+  margin-top:12px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  border:1px solid rgba(255,255,255,.22);
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 100%);
+  color:#1a1000;
+  font-family:inherit;
+  font-weight:900;
+  font-size:14.5px;
+  cursor:pointer;
+  box-shadow: 0 14px 32px -12px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,.5);
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  transition: transform .14s ease, background .18s ease;
+}
+#emptyState .ebtn i{ color: #1a1000; }
+#emptyState .ebtn:hover{ background: linear-gradient(180deg, #ffc266 0%, #ffa826 100%); }
+#emptyState .ebtn:active{ transform: scale(.95); }
+
+/* ---------- MODAL / SETTINGS ---------- */
+.sheet-backdrop{
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 500;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .24s ease;
+  display: flex;
+  align-items:center;
+  justify-content:center;
+  padding: 20px;
+}
+.sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+
+.sheet{
+  width:100%;
+  max-width: 540px;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  border-radius: var(--radius-lg);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transform: translateY(30px) scale(.96);
+  opacity:0;
+  transition: transform .3s cubic-bezier(.34,1.4,.64,1), opacity .2s ease;
+  background: linear-gradient(180deg, rgba(38,38,48,.94) 0%, rgba(22,22,30,.97) 100%);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 30px 80px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.sheet-backdrop.open .sheet{
+  transform: translateY(0) scale(1);
+  opacity:1;
+}
+.sheet.wide{ max-width: 660px; }
+
+.sheet-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 22px 26px 16px;
+  gap: 12px;
+  flex-shrink:0;
+}
+.sheet-header h2{
+  margin:0;
+  font-size:21px;
+  font-weight:900;
+  letter-spacing:-.02em;
+}
+.sheet-close{
+  width:38px; height:38px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color:#fff;
+  font-size:15px;
+  cursor:pointer;
+  padding:0;
+  transition: background .15s ease, transform .12s ease;
+  flex-shrink:0;
+}
+.sheet-close:hover{ background: rgba(255,255,255,.12); }
+.sheet-close:active{ transform: scale(.9); }
+
+.sheet-body{
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 26px 28px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.sheet-body::-webkit-scrollbar{ width:6px; }
+.sheet-body::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.16); border-radius:3px; }
+
+.sheet-footer{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 16px 26px 24px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+}
+
+/* ---------- FORM ---------- */
+.field-label{
+  display:block;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  color: rgba(255,255,255,.5);
+  margin: 22px 4px 10px;
+}
+.field-label:first-child{ margin-top: 8px; }
+
+.field-input{
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  outline:none;
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  -webkit-appearance:none;
+  appearance:none;
+  caret-color: var(--accent);
+}
+.field-input:focus{
+  border-color: rgba(255,159,10,.6);
+  background: rgba(255,255,255,.08);
+  box-shadow: 0 0 0 3px rgba(255,159,10,.18);
+}
+.field-input::placeholder{ color: rgba(255,255,255,.32); font-weight:600; }
+
+/* ---------- TABS ---------- */
+.tabs{
+  display:flex;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.08);
+  gap: 3px;
+  margin-top: 4px;
+}
+.tab{
+  flex:1;
+  appearance:none;
+  border:none;
+  background: transparent;
+  color: rgba(255,255,255,.65);
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 12.5px;
+  letter-spacing:.2px;
+  padding: 12px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .15s ease, color .15s ease;
+  touch-action: manipulation;
+}
+.tab i{ font-size: 13px; }
+.tab:hover{ color: #fff; background: rgba(255,255,255,.06); }
+.tab.active{
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 100%);
+  color:#1a1000;
+  box-shadow: 0 4px 12px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.tab.active i{ color:#1a1000; }
+
+.panel{ display:none; padding-top: 4px; }
+.panel.active{ display:block; }
+
+/* ---------- FA PICKER ---------- */
+.fa-preview{
+  display:flex;
+  align-items:center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  margin-top: 12px;
+}
+.fa-preview-box{
+  width: 60px; height: 60px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius: 16px;
+  background: rgba(255,255,255,.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+  font-size: 30px;
+  color: #fff;
+  flex-shrink:0;
+}
+.fa-preview-label{
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+  font-weight: 700;
+  word-break: break-all;
+  flex:1;
+  min-width:0;
+  line-height: 1.5;
+}
+.fa-preview-label strong{
+  display: block;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  letter-spacing:-.005em;
+}
+
+.fa-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.2);
+  scrollbar-width: thin;
+}
+.fa-grid::-webkit-scrollbar{ width:5px; }
+.fa-grid::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.16); border-radius:3px; }
+
+.fa-item{
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.85);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  transition: background .14s ease, transform .12s ease, border-color .14s ease, color .14s ease;
+  touch-action: manipulation;
+}
+.fa-item:hover{ background: rgba(255,255,255,.10); color:#fff; transform: translateY(-1px); }
+.fa-item:active{ transform: scale(.92); }
+.fa-item.active{
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 100%);
+  border-color: rgba(255,255,255,.35);
+  color:#1a1000;
+  box-shadow: 0 6px 16px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,.4);
+}
+
+/* ---------- CROP ---------- */
+.crop-container{ margin-top: 16px; }
+
+.crop-stage{
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: var(--radius-sm);
+  background:
+    repeating-conic-gradient(rgba(255,255,255,.04) 0% 25%, transparent 0% 50%) 50% / 20px 20px,
+    rgba(0,0,0,.4);
+  border: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.crop-frame{
+  position: relative;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 12px 40px rgba(0,0,0,.6);
+}
+.crop-frame img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.crop-box{
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.6) inset;
+  cursor: move;
+  touch-action: none;
+}
+.crop-grid{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent calc(33.33% - .5px), rgba(255,255,255,.4) calc(33.33% - .5px), rgba(255,255,255,.4) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.4) calc(66.66% - .5px), rgba(255,255,255,.4) calc(66.66% + .5px), transparent calc(66.66% + .5px)),
+    linear-gradient(0deg, transparent calc(33.33% - .5px), rgba(255,255,255,.4) calc(33.33% - .5px), rgba(255,255,255,.4) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.4) calc(66.66% - .5px), rgba(255,255,255,.4) calc(66.66% + .5px), transparent calc(66.66% + .5px));
+}
+.crop-handle{
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,.6);
+  touch-action: none;
+  z-index: 3;
+}
+.crop-handle[data-h="nw"]{ top:-8px;  left:-8px;  cursor: nwse-resize; }
+.crop-handle[data-h="n"] { top:-8px;  left:50%;   margin-left:-8px; cursor: ns-resize; }
+.crop-handle[data-h="ne"]{ top:-8px;  right:-8px; cursor: nesw-resize; }
+.crop-handle[data-h="e"] { top:50%;   right:-8px; margin-top:-8px;  cursor: ew-resize; }
+.crop-handle[data-h="se"]{ bottom:-8px; right:-8px; cursor: nwse-resize; }
+.crop-handle[data-h="s"] { bottom:-8px; left:50%; margin-left:-8px; cursor: ns-resize; }
+.crop-handle[data-h="sw"]{ bottom:-8px; left:-8px; cursor: nesw-resize; }
+.crop-handle[data-h="w"] { top:50%;   left:-8px;  margin-top:-8px;  cursor: ew-resize; }
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  appearance:none;
+  border:1px solid transparent;
+  padding: 13px 20px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  letter-spacing:.1px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+.btn:active{ transform: scale(.95); }
+.btn i{ font-size: 13px; }
+
+.btn-primary{
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 100%);
+  color: #1a1000;
+  box-shadow: 0 10px 24px -10px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,.45);
+  border-color: rgba(255,255,255,.22);
+}
+.btn-primary i{ color:#1a1000; }
+.btn-primary:hover{ background: linear-gradient(180deg, #ffc266 0%, #ffa826 100%); }
+
+.btn-ghost{
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.92);
+  border-color: rgba(255,255,255,.1);
+}
+.btn-ghost:hover{ background: rgba(255,255,255,.13); }
+
+.btn-secondary{
+  width: 100%;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.92);
+  border-color: rgba(255,255,255,.12);
+  margin-top: 12px;
+}
+.btn-secondary:hover{ background: rgba(255,255,255,.14); }
+
+.btn-danger{
+  background: rgba(255,69,58,.15);
+  color: #ff8a80;
+  border-color: rgba(255,69,58,.3);
+}
+.btn-danger:hover{ background: rgba(255,69,58,.25); color:#ffb4ae; }
+
+/* ---------- SETTINGS ---------- */
+.setting-group{
+  padding: 22px 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.setting-group:first-child{ padding-top: 10px; }
+.setting-group:last-child{ border-bottom:none; }
+.setting-label{
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  color: rgba(255,255,255,.92);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing:-.005em;
+}
+.setting-label i{ color: var(--accent); font-size: 14px; }
+
+.color-row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.color-swatch{
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.25);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  background: var(--c, #0a0a12);
+  flex-shrink:0;
+  transition: transform .14s ease, border-color .14s ease;
+}
+.color-swatch:hover{ transform: scale(1.06); border-color: rgba(255,255,255,.5); }
+.color-swatch input{
+  position: absolute;
+  inset: 0;
+  width:100%; height:100%;
+  opacity:0;
+  cursor: pointer;
+  border:none;
+  padding:0; margin:0;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.color-presets{
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+.color-preset{
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.14);
+  cursor: pointer;
+  padding: 0;
+  background: var(--c);
+  transition: transform .12s ease, border-color .14s ease, box-shadow .14s ease;
+  position: relative;
+}
+.color-preset:hover{ transform: scale(1.1); border-color: rgba(255,255,255,.4); }
+.color-preset.active{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255,159,10,.35), 0 0 12px rgba(255,159,10,.6);
+}
+.color-preset.active::after{
+  content:"";
+  position:absolute; inset:0;
+  margin:auto;
+  width: 7px; height: 7px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+
+.setting-row{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+.setting-row > span:first-child{
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,.6);
+  flex-shrink: 0;
+}
+.setting-row input[type="range"]{
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  background: rgba(255,255,255,.15);
+  border-radius: 3px;
+  outline: none;
+  padding: 0;
+}
+.setting-row input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,.5);
+  border: none;
+}
+.setting-row input[type="range"]::-moz-range-thumb{
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,.5);
+  border: none;
+}
+.setting-row > span:last-child{
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255,255,255,.9);
+  min-width: 46px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- TOAST ---------- */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%) translateY(20px);
+  padding: 13px 24px;
+  border-radius: 999px;
+  background: rgba(20,20,26,.95);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 12px 32px rgba(0,0,0,.6);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .28s cubic-bezier(.34,1.4,.64,1);
+  max-width: calc(100vw - 40px);
+  text-align: center;
+}
+.toast.show{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast.success{ border-color: rgba(48,209,88,.5); }
+.toast.error{ border-color: rgba(255,69,58,.5); }
+
+/* ---------- HINT ---------- */
+.long-press-hint{
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: rgba(255,255,255,.32);
+  font-weight: 700;
+  letter-spacing:.2px;
+  pointer-events:none;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.long-press-hint i{ font-size: 11px; }
+
+/* ---------- SCROLL FADE ---------- */
+.scroll-fade-top{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 40px;
+  background: linear-gradient(180deg, var(--bg), transparent);
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.scroll-fade-top.visible{ opacity: .85; }
+</style>
+</head>
+<body>
+
+<div id="bgLayer"></div>
+<div id="bgOverlay"></div>
+<div id="wallpaperLayer"></div>
+<div class="scroll-fade-top" id="scrollFade"></div>
+
+<div class="wrap">
+  <header class="app-header">
+    <h1><i class="fa-solid fa-table-cells-large"></i> Apps</h1>
+    <div class="header-actions">
+      <button class="icon-btn" id="settingsBtn" type="button" aria-label="Settings">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+      <button class="icon-btn primary" id="addBtn" type="button" aria-label="Add shortcut">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </div>
+  </header>
+
+  <div id="grid"></div>
+
+  <div id="emptyState">
+    <div class="eicon"><i class="fa-solid fa-table-cells-large"></i></div>
+    <div class="etitle">No shortcuts yet</div>
+    <div class="esub">Add your first app or website shortcut to get started. Long-press any tile later to edit it.</div>
+    <button class="ebtn" id="emptyAddBtn" type="button">
+      <i class="fa-solid fa-plus"></i> Add Shortcut
+    </button>
+  </div>
+</div>
+
+<!-- ---------- EDIT MODAL ---------- -->
+<div class="sheet-backdrop" id="editBackdrop">
+  <div class="sheet wide" id="editModal" role="dialog" aria-modal="true">
+    <div class="sheet-header">
+      <h2 id="editTitle">Add Shortcut</h2>
+      <button class="sheet-close" id="editClose" type="button" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="sheet-body" id="editBody">
+      <label class="field-label" for="editName">Name</label>
+      <input type="text" id="editName" class="field-input" placeholder="My App" maxlength="40" autocomplete="off" inputmode="none">
+
+      <label class="field-label">Icon</label>
+      <div class="tabs" id="iconTabs">
+        <button class="tab active" type="button" data-tab="fa">
+          <i class="fa-solid fa-icons"></i> Font Awesome
+        </button>
+        <button class="tab" type="button" data-tab="url">
+          <i class="fa-solid fa-link"></i> Image URL
+        </button>
+      </div>
+
+      <!-- FA Picker -->
+      <div class="panel active" id="panelFa">
+        <div class="fa-preview">
+          <div class="fa-preview-box"><i id="faPreviewIcon" class="fa-solid fa-globe"></i></div>
+          <div class="fa-preview-label">
+            <strong>Selected icon</strong>
+            <span id="faPreviewName">fa-solid fa-globe</span>
+          </div>
+        </div>
+        <input type="text" id="faSearch" class="field-input" placeholder="Search icons..." autocomplete="off" inputmode="none" style="margin-top:14px;">
+        <div class="fa-grid" id="faGrid"></div>
+      </div>
+
+      <!-- URL Picker -->
+      <div class="panel" id="panelUrl">
+        <input type="url" id="iconUrl" class="field-input" placeholder="https://example.com/icon.png" autocomplete="off" inputmode="none">
+        <button type="button" class="btn btn-secondary" id="iconFetchBtn">
+          <i class="fa-solid fa-download"></i> Fetch & Crop
+        </button>
+
+        <div class="crop-container" id="cropContainer" style="display:none;">
+          <label class="field-label" style="margin-top:16px;">Drag to move · Handles to resize</label>
+          <div class="crop-stage" id="cropStage">
+            <div class="crop-frame" id="cropFrame">
+              <img id="cropImage" alt="">
+              <div class="crop-box" id="cropBox">
+                <div class="crop-grid"></div>
+                <div class="crop-handle" data-h="nw"></div>
+                <div class="crop-handle" data-h="n"></div>
+                <div class="crop-handle" data-h="ne"></div>
+                <div class="crop-handle" data-h="e"></div>
+                <div class="crop-handle" data-h="se"></div>
+                <div class="crop-handle" data-h="s"></div>
+                <div class="crop-handle" data-h="sw"></div>
+                <div class="crop-handle" data-h="w"></div>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-ghost" id="cropResetBtn" style="width:100%; margin-top:14px;">
+            <i class="fa-solid fa-rotate-left"></i> Reset Crop
+          </button>
+        </div>
+      </div>
+
+      <label class="field-label" for="editUrl">Website URL</label>
+      <input type="url" id="editUrl" class="field-input" placeholder="https://example.com" autocomplete="off" inputmode="none">
+    </div>
+
+    <div class="sheet-footer">
+      <button class="btn btn-danger" id="editDelete" type="button" style="display:none;">
+        <i class="fa-solid fa-trash"></i> Delete
+      </button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="editCancel" type="button">Cancel</button>
+      <button class="btn btn-primary" id="editSave" type="button">
+        <i class="fa-solid fa-check"></i> Save
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- SETTINGS SHEET ---------- -->
+<div class="sheet-backdrop" id="settingsBackdrop">
+  <div class="sheet" id="settingsModal" role="dialog" aria-modal="true">
+    <div class="sheet-header">
+      <h2>Settings</h2>
+      <button class="sheet-close" id="settingsClose" type="button" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="sheet-body">
+      <div class="setting-group">
+        <div class="setting-label"><i class="fa-solid fa-palette"></i> Background Color</div>
+        <div class="color-row">
+          <label class="color-swatch" id="bgSwatch" style="--c:#0a0a12">
+            <input type="color" id="setBg" value="#0a0a12">
+          </label>
+          <div class="color-presets" id="bgPresets"></div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label"><i class="fa-solid fa-image"></i> Wallpaper</div>
+        <button type="button" class="btn btn-secondary" id="wallpaperBtn" style="margin-top:0;">
+          <i class="fa-solid fa-upload"></i> Upload Image
+        </button>
+        <input type="file" id="wallpaperInput" accept="image/*" hidden>
+        <div class="setting-row">
+          <span>Opacity</span>
+          <input type="range" id="wallpaperOpacity" min="0" max="100" value="60">
+          <span id="wallpaperOpacityVal">60%</span>
+        </div>
+        <button type="button" class="btn btn-ghost" id="wallpaperClearBtn" style="width:100%; margin-top:14px;">
+          <i class="fa-solid fa-trash"></i> Remove Wallpaper
+        </button>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</div>
+        <button type="button" class="btn btn-danger" id="resetBtn" style="width:100%;">
+          <i class="fa-solid fa-broom"></i> Reset Everything
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="long-press-hint">
+  <i class="fa-solid fa-hand-pointer"></i>
+  <span>Long-press a tile to edit</span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     CONSTANTS
+     ============================================================ */
+  var LS_SHORTCUTS = "appgrid.shortcuts.v2";
+  var LS_SETTINGS  = "appgrid.settings.v2";
+  var LS_WALLPAPER = "appgrid.wallpaper.v2";
+  var DEFAULT_ICON = "fa-solid fa-globe";
+  var MIN_CROP = 30;
+  var MIN_CROP_RECT = 24;
+
+  /* ============================================================
+     FONTAWESOME ICON LIST (large — brands + solids)
+     ============================================================ */
+  var FA_ICONS = [
+    /* --- BRANDS --- */
+    "fa-brands fa-google","fa-brands fa-youtube","fa-brands fa-facebook",
+    "fa-brands fa-x-twitter","fa-brands fa-instagram","fa-brands fa-tiktok",
+    "fa-brands fa-linkedin","fa-brands fa-github","fa-brands fa-gitlab",
+    "fa-brands fa-bitbucket","fa-brands fa-reddit","fa-brands fa-discord",
+    "fa-brands fa-twitch","fa-brands fa-spotify","fa-brands fa-apple",
+    "fa-brands fa-android","fa-brands fa-windows","fa-brands fa-linux",
+    "fa-brands fa-docker","fa-brands fa-npm","fa-brands fa-python",
+    "fa-brands fa-js","fa-brands fa-react","fa-brands fa-node-js",
+    "fa-brands fa-vuejs","fa-brands fa-angular","fa-brands fa-html5",
+    "fa-brands fa-css3-alt","fa-brands fa-figma","fa-brands fa-sketch",
+    "fa-brands fa-slack","fa-brands fa-telegram","fa-brands fa-whatsapp",
+    "fa-brands fa-signal","fa-brands fa-medium","fa-brands fa-dev",
+    "fa-brands fa-stack-overflow","fa-brands fa-aws","fa-brands fa-google-drive",
+    "fa-brands fa-dropbox","fa-brands fa-wikipedia-w","fa-brands fa-amazon",
+    "fa-brands fa-steam","fa-brands fa-playstation","fa-brands fa-xbox",
+    "fa-brands fa-itch-io","fa-brands fa-pinterest","fa-brands fa-snapchat",
+    "fa-brands fa-threads","fa-brands fa-mastodon","fa-brands fa-bluesky",
+    "fa-brands fa-soundcloud","fa-brands fa-vimeo","fa-brands fa-dribbble",
+    "fa-brands fa-behance","fa-brands fa-product-hunt","fa-brands fa-cloudflare",
+    "fa-brands fa-ubuntu","fa-brands fa-fedora","fa-brands fa-centos",
+    "fa-brands fa-google-play","fa-brands fa-app-store","fa-brands fa-edge",
+    "fa-brands fa-chrome","fa-brands fa-firefox","fa-brands fa-safari",
+    "fa-brands fa-opera","fa-brands fa-twitter","fa-brands fa-tumblr",
+    "fa-brands fa-flickr","fa-brands fa-yahoo","fa-brands fa-yandex",
+    "fa-brands fa-uber","fa-brands fa-airbnb","fa-brands fa-paypal",
+    "fa-brands fa-stripe","fa-brands fa-shopify","fa-brands fa-wordpress",
+    "fa-brands fa-etsy","fa-brands fa-ebay","fa-brands fa-alipay",
+    "fa-brands fa-cc-visa","fa-brands fa-cc-mastercard","fa-brands fa-cc-paypal",
+    "fa-brands fa-cc-amazon-pay","fa-brands fa-cc-apple-pay",
+    "fa-brands fa-mailchimp","fa-brands fa-hubspot","fa-brands fa-salesforce",
+    "fa-brands fa-jira","fa-brands fa-trello","fa-brands fa-asana",
+    "fa-brands fa-notion","fa-brands fa-microsoft","fa-brands fa-google-pay",
+    "fa-brands fa-golang","fa-brands fa-rust","fa-brands fa-swift",
+    "fa-brands fa-java","fa-brands fa-php","fa-brands fa-laravel",
+    "fa-brands fa-ubuntu","fa-brands fa-redhat","fa-brands fa-suse",
+    "fa-brands fa-bluetooth","fa-brands fa-usb","fa-brands fa-cc-stripe",
+
+    /* --- SOLID: Web / Navigation --- */
+    "fa-solid fa-globe","fa-solid fa-house","fa-solid fa-house-chimney",
+    "fa-solid fa-compass","fa-solid fa-map","fa-solid fa-map-location-dot",
+    "fa-solid fa-location-dot","fa-solid fa-route","fa-solid fa-link",
+    "fa-solid fa-arrow-up-right-from-square","fa-solid fa-share",
+    "fa-solid fa-share-nodes","fa-solid fa-arrow-right-arrow-left",
+
+    /* --- SOLID: User / Social --- */
+    "fa-solid fa-user","fa-solid fa-user-group","fa-solid fa-users",
+    "fa-solid fa-user-plus","fa-solid fa-user-check","fa-solid fa-user-tie",
+    "fa-solid fa-user-astronaut","fa-solid fa-user-secret",
+    "fa-solid fa-address-book","fa-solid fa-id-card","fa-solid fa-id-badge",
+    "fa-solid fa-handshake","fa-solid fa-people-group","fa-solid fa-person",
+    "fa-solid fa-person-dress","fa-solid fa-baby","fa-solid fa-child",
+
+    /* --- SOLID: Star / Heart / Bookmark --- */
+    "fa-solid fa-star","fa-solid fa-star-half-stroke","fa-solid fa-heart",
+    "fa-solid fa-heart-crack","fa-solid fa-bookmark","fa-solid fa-fire",
+    "fa-solid fa-fire-flame-curved","fa-solid fa-thumbs-up","fa-solid fa-thumbs-down",
+    "fa-solid fa-hand","fa-solid fa-hand-peace","fa-solid fa-hand-spock",
+    "fa-solid fa-crown","fa-solid fa-gem","fa-solid fa-trophy",
+    "fa-solid fa-medal","fa-solid fa-award","fa-solid fa-certificate",
+
+    /* --- SOLID: Learning / Work --- */
+    "fa-solid fa-book","fa-solid fa-book-open","fa-solid fa-book-bookmark",
+    "fa-solid fa-bookmark","fa-solid fa-graduation-cap","fa-solid fa-school",
+    "fa-solid fa-university","fa-solid fa-chalkboard","fa-solid fa-chalkboard-user",
+    "fa-solid fa-briefcase","fa-solid fa-building","fa-solid fa-building-columns",
+    "fa-solid fa-store","fa-solid fa-shop","fa-solid fa-warehouse",
+    "fa-solid fa-industry","fa-solid fa-city","fa-solid fa-landmark",
+    "fa-solid fa-pen","fa-solid fa-pencil","fa-solid fa-pen-to-square",
+    "fa-solid fa-pen-nib","fa-solid fa-pen-fancy","fa-solid fa-marker",
+    "fa-solid fa-highlighter","fa-solid fa-eraser","fa-solid fa-palette",
+    "fa-solid fa-paintbrush","fa-solid fa-brush","fa-solid fa-fill-drip",
+    "fa-solid fa-ruler","fa-solid fa-ruler-combined","fa-solid fa-scissors",
+    "fa-solid fa-clipboard","fa-solid fa-clipboard-list","fa-solid fa-paperclip",
+
+    /* --- SOLID: Communication --- */
+    "fa-solid fa-envelope","fa-solid fa-envelope-open","fa-solid fa-inbox",
+    "fa-solid fa-paper-plane","fa-solid fa-comment","fa-solid fa-comments",
+    "fa-solid fa-message","fa-solid fa-comment-dots","fa-solid fa-bell",
+    "fa-solid fa-bell-concierge","fa-solid fa-phone","fa-solid fa-phone-volume",
+    "fa-solid fa-mobile-screen","fa-solid fa-mobile","fa-solid fa-sim-card",
+    "fa-solid fa-video","fa-solid fa-camera","fa-solid fa-camera-retro",
+    "fa-solid fa-microphone","fa-solid fa-microphone-lines","fa-solid fa-headphones",
+    "fa-solid fa-podcast","fa-solid fa-bullhorn","fa-solid fa-megaphone",
+    "fa-solid fa-tower-broadcast","fa-solid fa-wifi","fa-solid fa-signal",
+    "fa-solid fa-satellite-dish","fa-solid fa-rss",
+
+    /* --- SOLID: Media / Music --- */
+    "fa-solid fa-music","fa-solid fa-headphones-simple","fa-solid fa-guitar",
+    "fa-solid fa-drum","fa-solid fa-piano","fa-solid fa-compact-disc",
+    "fa-solid fa-record-vinyl","fa-solid fa-circle-play","fa-solid fa-circle-pause",
+    "fa-solid fa-circle-stop","fa-solid fa-play","fa-solid fa-pause",
+    "fa-solid fa-stop","fa-solid fa-forward","fa-solid fa-backward",
+    "fa-solid fa-volume-high","fa-solid fa-volume-low","fa-solid fa-volume-xmark",
+    "fa-solid fa-film","fa-solid fa-clapperboard","fa-solid fa-video-camera",
+    "fa-solid fa-photo-film","fa-solid fa-image","fa-solid fa-images",
+    "fa-solid fa-file-image","fa-solid fa-tv","fa-solid fa-radio",
+    "fa-solid fa-ticket","fa-solid fa-masks-theater","fa-solid fa-palette",
+
+    /* --- SOLID: Food / Drink --- */
+    "fa-solid fa-utensils","fa-solid fa-mug-hot","fa-solid fa-mug-saucer",
+    "fa-solid fa-cup-togo","fa-solid fa-glass-water","fa-solid fa-wine-glass",
+    "fa-solid fa-beer-mug-empty","fa-solid fa-martini-glass","fa-solid fa-martini-glass-citrus",
+    "fa-solid fa-bottle-water","fa-solid fa-pizza-slice","fa-solid fa-burger",
+    "fa-solid fa-hotdog","fa-solid fa-fish","fa-solid fa-drumstick-bite",
+    "fa-solid fa-egg","fa-solid fa-bacon","fa-solid fa-carrot",
+    "fa-solid fa-apple-whole","fa-solid fa-lemon","fa-solid fa-stroopwafel",
+    "fa-solid fa-ice-cream","fa-solid fa-cake-candles","fa-solid fa-cookie-bite",
+    "fa-solid fa-candy-cane","fa-solid fa-jar","fa-solid fa-wheat-awn",
+
+    /* --- SOLID: Nature / Weather --- */
+    "fa-solid fa-sun","fa-solid fa-moon","fa-solid fa-cloud",
+    "fa-solid fa-cloud-sun","fa-solid fa-cloud-moon","fa-solid fa-cloud-rain",
+    "fa-solid fa-cloud-bolt","fa-solid fa-cloud-snow","fa-solid fa-snowflake",
+    "fa-solid fa-umbrella","fa-solid fa-droplet","fa-solid fa-water",
+    "fa-solid fa-wind","fa-solid fa-tornado","fa-solid fa-hurricane",
+    "fa-solid fa-rainbow","fa-solid fa-fire","fa-solid fa-tree",
+    "fa-solid fa-leaf","fa-solid fa-seedling","fa-solid fa-spa",
+    "fa-solid fa-fan","fa-solid fa-mountain","fa-solid fa-mountain-sun",
+    "fa-solid fa-volcano","fa-solid fa-water-ladder","fa-solid fa-umbrella-beach",
+    "fa-solid fa-paw","fa-solid fa-fish-fins","fa-solid fa-dragon",
+    "fa-solid fa-dove","fa-solid fa-crow","fa-solid fa-feather",
+    "fa-solid fa-feather-pointed","fa-solid fa-spider","fa-solid fa-bug",
+    "fa-solid fa-hippo","fa-solid fa-horse","fa-solid fa-cat",
+    "fa-solid fa-dog","fa-solid fa-cow","fa-solid fa-frog",
+    "fa-solid fa-otter","fa-solid fa-shrimp","fa-solid fa-worm",
+
+    /* --- SOLID: Flags --- */
+    "fa-solid fa-flag","fa-solid fa-flag-checkered","fa-solid fa-flag-usa",
+    "fa-regular fa-flag","fa-solid fa-chess-rook",
+
+    /* --- SOLID: Shopping / Finance --- */
+    "fa-solid fa-cart-shopping","fa-solid fa-cart-plus","fa-solid fa-bag-shopping",
+    "fa-solid fa-basket-shopping","fa-solid fa-credit-card","fa-solid fa-wallet",
+    "fa-solid fa-money-bill","fa-solid fa-money-bill-1","fa-solid fa-money-bill-wave",
+    "fa-solid fa-money-check","fa-solid fa-money-check-dollar","fa-solid fa-coins",
+    "fa-solid fa-piggy-bank","fa-solid fa-vault","fa-solid fa-receipt",
+    "fa-solid fa-tags","fa-solid fa-tag","fa-solid fa-percent",
+    "fa-solid fa-calculator","fa-solid fa-chart-line","fa-solid fa-chart-pie",
+    "fa-solid fa-chart-bar","fa-solid fa-chart-area","fa-solid fa-chart-column",
+    "fa-solid fa-scale-balanced","fa-solid fa-gavel","fa-solid fa-hand-holding-dollar",
+    "fa-solid fa-sack-dollar","fa-solid fa-sterling-sign","fa-solid fa-dollar-sign",
+    "fa-solid fa-euro-sign","fa-solid fa-yen-sign","fa-solid fa-indian-rupee-sign",
+    "fa-solid fa-bitcoin-sign","fa-solid fa-credit-card",
+
+    /* --- SOLID: Files / Office --- */
+    "fa-solid fa-file","fa-solid fa-file-lines","fa-solid fa-file-pdf",
+    "fa-solid fa-file-word","fa-solid fa-file-excel","fa-solid fa-file-powerpoint",
+    "fa-solid fa-file-zipper","fa-solid fa-file-code","fa-solid fa-file-audio",
+    "fa-solid fa-file-video","fa-solid fa-file-image","fa-solid fa-file-csv",
+    "fa-solid fa-folder","fa-solid fa-folder-open","fa-solid fa-folder-plus",
+    "fa-solid fa-folder-tree","fa-solid fa-box-archive","fa-solid fa-box",
+    "fa-solid fa-boxes-stacked","fa-solid fa-database","fa-solid fa-server",
+    "fa-solid fa-hard-drive","fa-solid fa-floppy-disk","fa-solid fa-print",
+    "fa-solid fa-copy","fa-solid fa-paste","fa-solid fa-scissors",
+    "fa-solid fa-trash","fa-solid fa-trash-can","fa-solid fa-recycle",
+    "fa-solid fa-download","fa-solid fa-upload","fa-solid fa-cloud-arrow-down",
+    "fa-solid fa-cloud-arrow-up","fa-solid fa-share-from-square",
+
+    /* --- SOLID: Tech / Code --- */
+    "fa-solid fa-code","fa-solid fa-code-branch","fa-solid fa-code-merge",
+    "fa-solid fa-code-pull-request","fa-solid fa-terminal","fa-solid fa-laptop-code",
+    "fa-solid fa-laptop","fa-solid fa-desktop","fa-solid fa-display",
+    "fa-solid fa-mobile-screen-button","fa-solid fa-tablet-screen-button",
+    "fa-solid fa-tablet","fa-solid fa-keyboard","fa-solid fa-mouse",
+    "fa-solid fa-computer","fa-solid fa-microchip","fa-solid fa-memory",
+    "fa-solid fa-bug","fa-solid fa-shield","fa-solid fa-shield-halved",
+    "fa-solid fa-lock","fa-solid fa-lock-open","fa-solid fa-key",
+    "fa-solid fa-fingerprint","fa-solid fa-user-shield","fa-solid fa-user-lock",
+    "fa-solid fa-robot","fa-solid fa-brain","fa-solid fa-atom",
+    "fa-solid fa-flask","fa-solid fa-vial","fa-solid fa-microscope",
+    "fa-solid fa-dna","fa-solid fa-cubes","fa-solid fa-cube",
+    "fa-solid fa-shapes","fa-solid fa-border-all","fa-solid fa-border-none",
+    "fa-solid fa-vector-square","fa-solid fa-diagram-project",
+    "fa-solid fa-sitemap","fa-solid fa-network-wired","fa-solid fa-wifi",
+
+    /* --- SOLID: Transport --- */
+    "fa-solid fa-car","fa-solid fa-car-side","fa-solid fa-taxi",
+    "fa-solid fa-bus","fa-solid fa-truck","fa-solid fa-truck-fast",
+    "fa-solid fa-train","fa-solid fa-train-subway","fa-solid fa-tram",
+    "fa-solid fa-bicycle","fa-solid fa-motorcycle","fa-solid fa-plane",
+    "fa-solid fa-plane-departure","fa-solid fa-plane-arrival","fa-solid fa-helicopter",
+    "fa-solid fa-ship","fa-solid fa-sailboat","fa-solid fa-anchor",
+    "fa-solid fa-rocket","fa-solid fa-gas-pump","fa-solid fa-road",
+    "fa-solid fa-traffic-light","fa-solid fa-square-parking","fa-solid fa-motorcycle",
+
+    /* --- SOLID: Tools / Misc --- */
+    "fa-solid fa-gear","fa-solid fa-gears","fa-solid fa-wrench",
+    "fa-solid fa-screwdriver","fa-solid fa-screwdriver-wrench","fa-solid fa-hammer",
+    "fa-solid fa-toolbox","fa-solid fa-tools","fa-solid fa-swatchbook",
+    "fa-solid fa-lightbulb","fa-solid fa-bolt","fa-solid fa-bolt-lightning",
+    "fa-solid fa-plug","fa-solid fa-power-off","fa-solid fa-battery-full",
+    "fa-solid fa-battery-half","fa-solid fa-battery-empty","fa-solid fa-charging-station",
+    "fa-solid fa-clock","fa-solid fa-clock-rotate-left","fa-solid fa-stopwatch",
+    "fa-solid fa-hourglass","fa-solid fa-hourglass-half","fa-solid fa-calendar",
+    "fa-solid fa-calendar-days","fa-solid fa-calendar-check","fa-solid fa-calendar-plus",
+    "fa-solid fa-bell","fa-solid fa-bell-slash","fa-solid fa-magnifying-glass",
+    "fa-solid fa-magnifying-glass-plus","fa-solid fa-magnifying-glass-minus",
+    "fa-solid fa-filter","fa-solid fa-sort","fa-solid fa-arrows-rotate",
+    "fa-solid fa-rotate","fa-solid fa-rotate-right","fa-solid fa-arrows-spin",
+    "fa-solid fa-expand","fa-solid fa-compress","fa-solid fa-maximize",
+    "fa-solid fa-minimize","fa-solid fa-up-right-and-down-left-from-center",
+    "fa-solid fa-crop","fa-solid fa-crop-simple","fa-solid fa-eye",
+    "fa-solid fa-eye-slash","fa-solid fa-crosshairs","fa-solid fa-location-crosshairs",
+    "fa-solid fa-circle-info","fa-solid fa-circle-question","fa-solid fa-circle-exclamation",
+    "fa-solid fa-circle-check","fa-solid fa-circle-xmark","fa-solid fa-circle-plus",
+    "fa-solid fa-circle-minus","fa-solid fa-triangle-exclamation","fa-solid fa-square-check",
+    "fa-solid fa-square-xmark","fa-solid fa-square-plus","fa-solid fa-square-minus",
+    "fa-solid fa-check","fa-solid fa-xmark","fa-solid fa-plus",
+    "fa-solid fa-minus","fa-solid fa-equals","fa-solid fa-divide",
+    "fa-solid fa-infinity","fa-solid fa-hashtag","fa-solid fa-at",
+    "fa-solid fa-quote-left","fa-solid fa-quote-right","fa-solid fa-asterisk",
+    "fa-solid fa-star-of-life","fa-solid fa-burst","fa-solid fa-sparkles",
+    "fa-solid fa-wand-magic","fa-solid fa-wand-magic-sparkles","fa-solid fa-wand-sparkles",
+    "fa-solid fa-crystal-ball","fa-solid fa-hat-wizard","fa-solid fa-ghost",
+    "fa-solid fa-skull","fa-solid fa-snowman","fa-solid fa-candy-cane",
+    "fa-solid fa-gifts","fa-solid fa-gift","fa-solid fa-cake-candles",
+    "fa-solid fa-champagne-glasses","fa-solid fa-wine-glass","fa-solid fa-wine-bottle"
+  ];
+
+  /* ============================================================
+     STATE
+     ============================================================ */
+  var state = {
+    shortcuts: [],
+    settings: {
+      bgColor: "#0a0a12",
+      wallpaperOpacity: 60
+    },
+    wallpaper: null   // stored separately so it doesn't take down everything else
+  };
+
+  var modal = {
+    mode: "add",
+    editingId: null,
+    iconType: "fa",
+    faIcon: DEFAULT_ICON,
+    iconUrl: "",
+    crop: null,
+    imageLoaded: false
+  };
+
+  var crop = {
+    active: false,
+    frameW: 0, frameH: 0,
+    boxL: 0, boxT: 0, boxW: 0, boxH: 0,
+    dragMode: null,
+    dragStartX: 0, dragStartY: 0,
+    dragStartL: 0, dragStartT: 0, dragStartW: 0, dragStartH: 0
+  };
+
+  /* ============================================================
+     STORAGE — granular, quota-safe
+     ============================================================ */
+  var storageOK = (function(){
+    try {
+      localStorage.setItem("__appgrid_test__", "1");
+      localStorage.removeItem("__appgrid_test__");
+      return true;
+    } catch(e){ return false; }
+  })();
+
+  function loadShortcuts(){
+    try {
+      var s = localStorage.getItem(LS_SHORTCUTS);
+      if (s) state.shortcuts = JSON.parse(s) || [];
+    } catch(e){ console.warn("[appgrid] shortcuts load failed", e); }
+  }
+  function loadSettings(){
+    try {
+      var s = localStorage.getItem(LS_SETTINGS);
+      if (s) {
+        var p = JSON.parse(s);
+        if (p && typeof p === "object") {
+          if (typeof p.bgColor === "string") state.settings.bgColor = p.bgColor;
+          if (typeof p.wallpaperOpacity === "number") state.settings.wallpaperOpacity = p.wallpaperOpacity;
+        }
+      }
+    } catch(e){ console.warn("[appgrid] settings load failed", e); }
+  }
+  function loadWallpaper(){
+    try {
+      var w = localStorage.getItem(LS_WALLPAPER);
+      if (w) state.wallpaper = w;
+    } catch(e){ console.warn("[appgrid] wallpaper load failed", e); }
+  }
+
+  function saveShortcuts(){
+    if (!storageOK) return false;
+    try {
+      localStorage.setItem(LS_SHORTCUTS, JSON.stringify(state.shortcuts));
+      return true;
+    } catch(e){
+      console.warn("[appgrid] shortcuts save failed", e);
+      return false;
+    }
+  }
+  function saveSettings(){
+    if (!storageOK) return false;
+    try {
+      localStorage.setItem(LS_SETTINGS, JSON.stringify(state.settings));
+      return true;
+    } catch(e){
+      console.warn("[appgrid] settings save failed", e);
+      return false;
+    }
+  }
+  function saveWallpaper(dataUrl){
+    if (!storageOK) return "no-storage";
+    try {
+      if (dataUrl === null) {
+        localStorage.removeItem(LS_WALLPAPER);
+        state.wallpaper = null;
+        return "ok";
+      }
+      localStorage.setItem(LS_WALLPAPER, dataUrl);
+      state.wallpaper = dataUrl;
+      return "ok";
+    } catch(e){
+      // likely quota
+      if (e && (e.name === "QuotaExceededError" || e.code === 22 || e.code === 1014)) {
+        return "quota";
+      }
+      return "error";
+    }
+  }
+
+  /* ============================================================
+     UTILITIES
+     ============================================================ */
+  function uid(){
+    return "s_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
+  }
+  function normalizeUrl(u){
+    u = String(u || "").trim();
+    if (!u) return "";
+    if (!/^https?:\/\//i.test(u) && !/^ftp:\/\//i.test(u) && !/^mailto:/i.test(u)) {
+      return "https://" + u;
+    }
+    return u;
+  }
+  function toast(msg, type){
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "toast show" + (type ? " " + type : "");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+  }
+
+  /* ============================================================
+     TILE ICON RENDERING
+     ============================================================ */
+  function renderIconContent(container, shortcut){
+    container.innerHTML = "";
+
+    if (shortcut.iconType === "url" && shortcut.iconValue){
+      var cropWrapper = document.createElement("div");
+      cropWrapper.className = "tile-icon-crop";
+      var img = document.createElement("img");
+      img.alt = "";
+      img.referrerPolicy = "no-referrer";
+      img.decoding = "async";
+
+      var c = shortcut.crop;
+      if (c && c.w > 0 && c.h > 0) {
+        // Calculate container size based on tile-icon actual pixel size
+        // We use percentage-based positioning scaled by crop dimensions.
+        var cw = Math.max(0.0001, c.w);
+        var ch = Math.max(0.0001, c.h);
+        img.style.width   = (100 / cw) + "%";
+        img.style.height  = (100 / ch) + "%";
+        img.style.left    = (-c.x * 100 / cw) + "%";
+        img.style.top     = (-c.y * 100 / ch) + "%";
+        img.style.objectFit = "fill";
+      } else {
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.left = "0";
+        img.style.top = "0";
+        img.style.objectFit = "contain";
+      }
+
+      img.onerror = function(){
+        container.innerHTML = '<i class="' + DEFAULT_ICON + '"></i>';
+      };
+      img.src = shortcut.iconValue;
+      cropWrapper.appendChild(img);
+      container.appendChild(cropWrapper);
+      return;
+    }
+
+    var i = document.createElement("i");
+    i.className = shortcut.iconValue || DEFAULT_ICON;
+    container.appendChild(i);
+  }
+
+  /* ============================================================
+     GRID RENDERING
+     ============================================================ */
+  function renderGrid(){
+    var grid = document.getElementById("grid");
+    var empty = document.getElementById("emptyState");
+    grid.innerHTML = "";
+
+    if (!state.shortcuts.length){
+      empty.style.display = "flex";
+      return;
+    }
+    empty.style.display = "none";
+
+    state.shortcuts.forEach(function(s){
+      var tile = document.createElement("div");
+      tile.className = "tile glass";
+      tile.dataset.id = s.id;
+      tile.setAttribute("role", "button");
+      tile.setAttribute("tabindex", "0");
+
+      var iconBox = document.createElement("div");
+      iconBox.className = "tile-icon";
+      renderIconContent(iconBox, s);
+
+      var nameEl = document.createElement("div");
+      nameEl.className = "tile-name";
+      nameEl.textContent = s.name || "Untitled";
+
+      tile.appendChild(iconBox);
+      tile.appendChild(nameEl);
+
+      attachTileEvents(tile, s);
+      grid.appendChild(tile);
+    });
+
+    animateTilesIn();
+  }
+
+  function animateTilesIn(){
+    if (typeof gsap === "undefined") return;
+    var tiles = document.querySelectorAll(".tile");
+    if (!tiles.length) return;
+    gsap.fromTo(tiles,
+      { y: 20, opacity: 0, scale: 0.94 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.4)",
+        stagger: { each: 0.045, from: "start" }, clearProps: "transform" }
+    );
+  }
+
+  /* ============================================================
+     TILE EVENTS (tap + long-press)
+     ============================================================ */
+  function attachTileEvents(tile, shortcut){
+    var pressTimer = null;
+    var longPressed = false;
+    var startX = 0, startY = 0;
+    var moved = false;
+
+    function cancel(){
+      if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; }
+      tile.classList.remove("pressing");
+    }
+
+    tile.addEventListener("pointerdown", function(e){
+      if (e.button && e.button !== 0) return;
+      longPressed = false;
+      moved = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      tile.classList.add("pressing");
+      pressTimer = setTimeout(function(){
+        pressTimer = null;
+        longPressed = true;
+        tile.classList.remove("pressing");
+        if (navigator.vibrate) { try { navigator.vibrate(18); } catch(err){} }
+        openEditModal(shortcut);
+      }, 500);
+    });
+
+    tile.addEventListener("pointermove", function(e){
+      var dx = e.clientX - startX;
+      var dy = e.clientY - startY;
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8){
+        moved = true;
+        cancel();
+      }
+    });
+
+    tile.addEventListener("pointerup", function(e){
+      var wasLong = longPressed;
+      cancel();
+      if (wasLong || moved) return;
+      if (!shortcut.url) return;
+      window.location.href = normalizeUrl(shortcut.url);
+    });
+
+    tile.addEventListener("pointercancel", cancel);
+    tile.addEventListener("pointerleave", cancel);
+
+    tile.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+
+    tile.addEventListener("keydown", function(e){
+      if (e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        if (shortcut.url) window.location.href = normalizeUrl(shortcut.url);
+      }
+    });
+  }
+
+  /* ============================================================
+     MODAL REFS
+     ============================================================ */
+  var editBackdrop = document.getElementById("editBackdrop");
+  var editBody = document.getElementById("editBody");
+  var editName = document.getElementById("editName");
+  var editUrl = document.getElementById("editUrl");
+  var editTitle = document.getElementById("editTitle");
+  var editDelete = document.getElementById("editDelete");
+
+  var faGrid = document.getElementById("faGrid");
+  var faSearch = document.getElementById("faSearch");
+  var faPreviewIcon = document.getElementById("faPreviewIcon");
+  var faPreviewName = document.getElementById("faPreviewName");
+  var iconUrlInput = document.getElementById("iconUrl");
+  var cropContainer = document.getElementById("cropContainer");
+  var cropStage = document.getElementById("cropStage");
+  var cropFrame = document.getElementById("cropFrame");
+  var cropImage = document.getElementById("cropImage");
+  var cropBox = document.getElementById("cropBox");
+
+  /* ============================================================
+     MODAL: OPEN / CLOSE
+     ============================================================ */
+  function switchTab(tab){
+    document.querySelectorAll("#iconTabs .tab").forEach(function(b){
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+    document.getElementById("panelFa").classList.toggle("active", tab === "fa");
+    document.getElementById("panelUrl").classList.toggle("active", tab === "url");
+    modal.iconType = tab;
+  }
+
+  function renderFaGrid(filter){
+    filter = (filter || "").toLowerCase().trim();
+    faGrid.innerHTML = "";
+    var list = FA_ICONS;
+    if (filter) {
+      list = FA_ICONS.filter(function(c){ return c.toLowerCase().indexOf(filter) !== -1; });
+    }
+    if (!list.length){
+      var empty = document.createElement("div");
+      empty.style.gridColumn = "1 / -1";
+      empty.style.padding = "20px";
+      empty.style.textAlign = "center";
+      empty.style.color = "rgba(255,255,255,.4)";
+      empty.style.fontSize = "13px";
+      empty.textContent = "No icons match your search";
+      faGrid.appendChild(empty);
+      return;
+    }
+    var frag = document.createDocumentFragment();
+    list.forEach(function(cls){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "fa-item" + (cls === modal.faIcon ? " active" : "");
+      btn.setAttribute("aria-label", cls);
+      btn.innerHTML = '<i class="' + cls + '"></i>';
+      btn.addEventListener("click", function(){ selectFaIcon(cls); });
+      frag.appendChild(btn);
+    });
+    faGrid.appendChild(frag);
+  }
+
+  function selectFaIcon(cls){
+    modal.faIcon = cls;
+    faPreviewIcon.className = cls;
+    faPreviewName.textContent = cls;
+    faGrid.querySelectorAll(".fa-item").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("aria-label") === cls);
+    });
+  }
+
+  function openEditModal(shortcut){
+    modal.mode = shortcut ? "edit" : "add";
+    modal.editingId = shortcut ? shortcut.id : null;
+
+    editTitle.textContent = shortcut ? "Edit Shortcut" : "Add Shortcut";
+    editDelete.style.display = shortcut ? "inline-flex" : "none";
+
+    editName.value = shortcut ? shortcut.name : "";
+    editUrl.value = shortcut ? shortcut.url : "";
+
+    /* Reset URL section */
+    iconUrlInput.value = "";
+    cropContainer.style.display = "none";
+    cropImage.removeAttribute("src");
+    crop.active = false;
+    modal.imageLoaded = false;
+
+    /* Icon type */
+    if (shortcut && shortcut.iconType === "url"){
+      switchTab("url");
+      modal.iconUrl = shortcut.iconValue || "";
+      modal.crop = shortcut.crop ? Object.assign({}, shortcut.crop) : null;
+      iconUrlInput.value = modal.iconUrl;
+      if (modal.iconUrl) {
+        cropContainer.style.display = "block";
+        loadCropImage(modal.iconUrl, modal.crop);
+      }
+    } else {
+      switchTab("fa");
+      modal.faIcon = (shortcut && shortcut.iconType === "fa" && shortcut.iconValue) ? shortcut.iconValue : DEFAULT_ICON;
+      modal.crop = null;
+      modal.iconUrl = "";
+      selectFaIcon(modal.faIcon);
+      faSearch.value = "";
+      renderFaGrid("");
+      setTimeout(function(){
+        var activeItem = faGrid.querySelector(".fa-item.active");
+        if (activeItem) {
+          var top = activeItem.offsetTop - faGrid.offsetTop - 40;
+          if (top > 0) faGrid.scrollTop = top;
+        }
+      }, 30);
+    }
+
+    editBackdrop.classList.add("open");
+    editBody.scrollTop = 0;
+    setTimeout(function(){
+      if (!shortcut) {
+        try { editName.focus(); } catch(e){}
+      }
+    }, 260);
+  }
+
+  function closeEditModal(){
+    editBackdrop.classList.remove("open");
+    dismissKeyboard();
+    if (document.activeElement && document.activeElement.blur) {
+      try { document.activeElement.blur(); } catch(e){}
+    }
+  }
+
+  function dismissKeyboard(){
+    var kbClose = document.getElementById("kbClose");
+    if (kbClose) {
+      var kbWrap = document.getElementById("kbWrap");
+      if (kbWrap && kbWrap.classList.contains("open")) {
+        kbClose.click();
+      }
+    }
+  }
+
+  /* ============================================================
+     CROP LOGIC (rectangular)
+     ============================================================ */
+  function loadCropImage(url, existingCrop){
+    modal.iconUrl = url;
+    modal.imageLoaded = false;
+
+    cropImage.removeAttribute("src");
+    cropImage.onload = function(){
+      modal.imageLoaded = true;
+      initCropBox(existingCrop);
+    };
+    cropImage.onerror = function(){
+      modal.imageLoaded = false;
+      toast("Couldn't load that image", "error");
+      cropContainer.style.display = "none";
+    };
+    setTimeout(function(){ cropImage.src = url; }, 20);
+  }
+
+  function initCropBox(existingCrop){
+    // Wait for layout
+    requestAnimationFrame(function(){
+      var stageRect = cropStage.getBoundingClientRect();
+      var natW = cropImage.naturalWidth || 1;
+      var natH = cropImage.naturalHeight || 1;
+      var stageW = stageRect.width;
+      var stageH = stageRect.height;
+      if (!stageW || !stageH) return;
+
+      var scale = Math.min(stageW / natW, stageH / natH, 1);
+      var frameW = Math.max(60, Math.floor(natW * scale));
+      var frameH = Math.max(60, Math.floor(natH * scale));
+
+      cropFrame.style.width = frameW + "px";
+      cropFrame.style.height = frameH + "px";
+
+      crop.frameW = frameW;
+      crop.frameH = frameH;
+
+      if (existingCrop && existingCrop.w > 0 && existingCrop.h > 0) {
+        crop.boxW = Math.max(MIN_CROP_RECT, existingCrop.w * frameW);
+        crop.boxH = Math.max(MIN_CROP_RECT, existingCrop.h * frameH);
+        crop.boxL = Math.max(0, Math.min(frameW - crop.boxW, existingCrop.x * frameW));
+        crop.boxT = Math.max(0, Math.min(frameH - crop.boxH, existingCrop.y * frameH));
+      } else {
+        // Default: 80% wide, 80% tall rectangle centered
+        crop.boxW = Math.floor(frameW * 0.8);
+        crop.boxH = Math.floor(frameH * 0.8);
+        crop.boxL = Math.floor((frameW - crop.boxW) / 2);
+        crop.boxT = Math.floor((frameH - crop.boxH) / 2);
+      }
+
+      crop.active = true;
+      updateCropBoxVisual();
+    });
+  }
+
+  function updateCropBoxVisual(){
+    cropBox.style.left = crop.boxL + "px";
+    cropBox.style.top = crop.boxT + "px";
+    cropBox.style.width = crop.boxW + "px";
+    cropBox.style.height = crop.boxH + "px";
+  }
+
+  /* --- Crop drag --- */
+  cropBox.addEventListener("pointerdown", function(e){
+    if (e.target.classList.contains("crop-handle")) return;
+    if (!crop.active) return;
+    e.preventDefault();
+    e.stopPropagation();
+    startCropDrag(e, "move");
+  });
+  document.querySelectorAll(".crop-handle").forEach(function(h){
+    h.addEventListener("pointerdown", function(e){
+      if (!crop.active) return;
+      e.preventDefault();
+      e.stopPropagation();
+      startCropDrag(e, h.dataset.h);
+    });
+  });
+
+  function startCropDrag(e, mode){
+    crop.dragMode = mode;
+    crop.dragStartX = e.clientX;
+    crop.dragStartY = e.clientY;
+    crop.dragStartL = crop.boxL;
+    crop.dragStartT = crop.boxT;
+    crop.dragStartW = crop.boxW;
+    crop.dragStartH = crop.boxH;
+    document.addEventListener("pointermove", onCropDragMove);
+    document.addEventListener("pointerup", onCropDragEnd);
+    document.addEventListener("pointercancel", onCropDragEnd);
+    try { e.target.setPointerCapture(e.pointerId); } catch(err){}
+  }
+
+  function onCropDragMove(e){
+    if (!crop.dragMode) return;
+    e.preventDefault();
+    var dx = e.clientX - crop.dragStartX;
+    var dy = e.clientY - crop.dragStartY;
+    var fw = crop.frameW, fh = crop.frameH;
+    var minR = MIN_CROP_RECT;
+
+    if (crop.dragMode === "move"){
+      crop.boxL = Math.max(0, Math.min(fw - crop.boxW, crop.dragStartL + dx));
+      crop.boxT = Math.max(0, Math.min(fh - crop.boxH, crop.dragStartT + dy));
+    } else {
+      var L = crop.dragStartL, T = crop.dragStartT;
+      var W = crop.dragStartW, H = crop.dragStartH;
+      var R = L + W, B = T + H;
+
+      var m = crop.dragMode;
+      var newL = L, newT = T, newR = R, newB = B;
+
+      if (m.indexOf("w") !== -1) newL = Math.max(0, Math.min(R - minR, L + dx));
+      if (m.indexOf("e") !== -1) newR = Math.min(fw, Math.max(L + minR, R + dx));
+      if (m.indexOf("n") !== -1) newT = Math.max(0, Math.min(B - minR, T + dy));
+      if (m.indexOf("s") !== -1) newB = Math.min(fh, Math.max(T + minR, B + dy));
+
+      crop.boxL = newL;
+      crop.boxT = newT;
+      crop.boxW = newR - newL;
+      crop.boxH = newB - newT;
+    }
+    updateCropBoxVisual();
+  }
+
+  function onCropDragEnd(){
+    crop.dragMode = null;
+    document.removeEventListener("pointermove", onCropDragMove);
+    document.removeEventListener("pointerup", onCropDragEnd);
+    document.removeEventListener("pointercancel", onCropDragEnd);
+  }
+
+  function getCurrentCrop(){
+    if (!crop.active || !crop.frameW || !crop.frameH) return null;
+    return {
+      x: crop.boxL / crop.frameW,
+      y: crop.boxT / crop.frameH,
+      w: crop.boxW / crop.frameW,
+      h: crop.boxH / crop.frameH
+    };
+  }
+
+  function resetCrop(){
+    if (!crop.active) return;
+    crop.boxW = Math.floor(crop.frameW * 0.8);
+    crop.boxH = Math.floor(crop.frameH * 0.8);
+    crop.boxL = Math.floor((crop.frameW - crop.boxW) / 2);
+    crop.boxT = Math.floor((crop.frameH - crop.boxH) / 2);
+    updateCropBoxVisual();
+  }
+
+  /* ============================================================
+     MODAL: WIRE UP
+     ============================================================ */
+  document.getElementById("addBtn").addEventListener("click", function(){ openEditModal(null); });
+  document.getElementById("emptyAddBtn").addEventListener("click", function(){ openEditModal(null); });
+  document.getElementById("editClose").addEventListener("click", closeEditModal);
+  document.getElementById("editCancel").addEventListener("click", closeEditModal);
+
+  editBackdrop.addEventListener("click", function(e){
+    if (e.target === editBackdrop) closeEditModal();
+  });
+
+  document.querySelectorAll("#iconTabs .tab").forEach(function(b){
+    b.addEventListener("click", function(){
+      switchTab(b.dataset.tab);
+      if (b.dataset.tab === "fa") renderFaGrid(faSearch.value);
+    });
+  });
+
+  faSearch.addEventListener("input", function(){
+    renderFaGrid(faSearch.value);
+  });
+
+  document.getElementById("iconFetchBtn").addEventListener("click", function(){
+    var url = iconUrlInput.value.trim();
+    if (!url) { toast("Paste an image URL first", "error"); return; }
+    if (!/^https?:\/\//i.test(url)) {
+      url = "https://" + url;
+      iconUrlInput.value = url;
+    }
+    cropContainer.style.display = "block";
+    modal.crop = null;
+    loadCropImage(url, null);
+  });
+
+  iconUrlInput.addEventListener("change", function(){
+    var url = iconUrlInput.value.trim();
+    if (!url) return;
+    if (modal.imageLoaded && modal.iconUrl === url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      url = "https://" + url;
+      iconUrlInput.value = url;
+    }
+    cropContainer.style.display = "block";
+    modal.crop = null;
+    loadCropImage(url, null);
+  });
+
+  document.getElementById("cropResetBtn").addEventListener("click", resetCrop);
+
+  /* --- Save --- */
+  document.getElementById("editSave").addEventListener("click", function(){
+    var name = editName.value.trim();
+    var website = editUrl.value.trim();
+
+    if (!name) { toast("Give your shortcut a name", "error"); editName.focus(); return; }
+    if (!website) { toast("Enter a website URL", "error"); editUrl.focus(); return; }
+
+    var iconType, iconValue, cropCoords = null;
+
+    if (modal.iconType === "fa"){
+      iconType = "fa";
+      iconValue = modal.faIcon || DEFAULT_ICON;
+    } else {
+      var url = iconUrlInput.value.trim();
+      if (url && !/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+        iconUrlInput.value = url;
+      }
+      if (!url){
+        iconType = "fa";
+        iconValue = DEFAULT_ICON;
+      } else {
+        iconType = "url";
+        iconValue = url;
+        cropCoords = getCurrentCrop();
+      }
+    }
+
+    var shortcut = {
+      id: modal.editingId || uid(),
+      name: name,
+      url: website,
+      iconType: iconType,
+      iconValue: iconValue,
+      crop: cropCoords
+    };
+
+    if (modal.mode === "edit"){
+      var idx = state.shortcuts.findIndex(function(s){ return s.id === modal.editingId; });
+      if (idx !== -1) state.shortcuts[idx] = shortcut;
+    } else {
+      state.shortcuts.push(shortcut);
+    }
+
+    if (!saveShortcuts()) toast("Couldn't save — storage unavailable", "error");
+    else toast(modal.mode === "edit" ? "Shortcut updated" : "Shortcut added", "success");
+    renderGrid();
+    closeEditModal();
+  });
+
+  /* --- Delete --- */
+  editDelete.addEventListener("click", function(){
+    if (!modal.editingId) return;
+    if (!confirm("Delete this shortcut?")) return;
+    state.shortcuts = state.shortcuts.filter(function(s){ return s.id !== modal.editingId; });
+    saveShortcuts();
+    renderGrid();
+    closeEditModal();
+    toast("Shortcut deleted", "success");
+  });
+
+  /* ============================================================
+     SETTINGS
+     ============================================================ */
+  var settingsBackdrop = document.getElementById("settingsBackdrop");
+  var setBg = document.getElementById("setBg");
+  var bgSwatch = document.getElementById("bgSwatch");
+  var bgPresets = document.getElementById("bgPresets");
+  var wallpaperInput = document.getElementById("wallpaperInput");
+  var wallpaperOpacity = document.getElementById("wallpaperOpacity");
+  var wallpaperOpacityVal = document.getElementById("wallpaperOpacityVal");
+  var wallpaperLayer = document.getElementById("wallpaperLayer");
+
+  var BG_PRESETS = ["#0a0a12","#12121a","#1a1a24","#0f0f18","#1c1c28","#2a2a3a","#0d1117","#111827","#0f172a","#18181b","#1e1b4b","#0c0a09"];
+
+  function applyBgColor(){
+    state.settings.bgColor = state.settings.bgColor || "#0a0a12";
+    document.documentElement.style.background = state.settings.bgColor;
+    document.getElementById("bgLayer").style.background = state.settings.bgColor;
+    bgSwatch.style.setProperty("--c", state.settings.bgColor);
+    setBg.value = state.settings.bgColor;
+    bgPresets.querySelectorAll(".color-preset").forEach(function(b){
+      b.classList.toggle("active", b.dataset.c.toLowerCase() === state.settings.bgColor.toLowerCase());
+    });
+  }
+
+  function applyWallpaper(){
+    if (state.wallpaper){
+      wallpaperLayer.style.backgroundImage = "url(" + state.wallpaper + ")";
+      wallpaperLayer.style.opacity = (state.settings.wallpaperOpacity / 100).toString();
+    } else {
+      wallpaperLayer.style.backgroundImage = "none";
+      wallpaperLayer.style.opacity = "0";
+    }
+    wallpaperOpacity.value = state.settings.wallpaperOpacity;
+    wallpaperOpacityVal.textContent = state.settings.wallpaperOpacity + "%";
+  }
+
+  function renderBgPresets(){
+    bgPresets.innerHTML = "";
+    BG_PRESETS.forEach(function(c){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "color-preset";
+      b.style.setProperty("--c", c);
+      b.dataset.c = c;
+      b.setAttribute("aria-label", "Background " + c);
+      b.addEventListener("click", function(){
+        state.settings.bgColor = c;
+        applyBgColor();
+        saveSettings();
+      });
+      bgPresets.appendChild(b);
+    });
+  }
+
+  setBg.addEventListener("input", function(e){
+    state.settings.bgColor = e.target.value;
+    applyBgColor();
+  });
+  setBg.addEventListener("change", saveSettings);
+
+  wallpaperOpacity.addEventListener("input", function(e){
+    state.settings.wallpaperOpacity = parseInt(e.target.value, 10) || 0;
+    wallpaperOpacityVal.textContent = state.settings.wallpaperOpacity + "%";
+    wallpaperLayer.style.opacity = (state.settings.wallpaperOpacity / 100).toString();
+  });
+  wallpaperOpacity.addEventListener("change", saveSettings);
+
+  document.getElementById("wallpaperBtn").addEventListener("click", function(){
+    wallpaperInput.click();
+  });
+
+  wallpaperInput.addEventListener("change", function(){
+    var file = wallpaperInput.files && wallpaperInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")){
+      toast("Please pick an image file", "error");
+      return;
+    }
+    // Compress wallpaper aggressively to fit localStorage
+    resizeImage(file, 1280, 720, 0.72, function(dataUrl){
+      var result = saveWallpaper(dataUrl);
+      if (result === "ok"){
+        applyWallpaper();
+        toast("Wallpaper set", "success");
+      } else if (result === "quota"){
+        toast("Image too large — try a smaller one", "error");
+      } else if (result === "no-storage"){
+        toast("Storage unavailable in this browser", "error");
+      } else {
+        toast("Couldn't save wallpaper", "error");
+      }
+    });
+    wallpaperInput.value = "";
+  });
+
+  document.getElementById("wallpaperClearBtn").addEventListener("click", function(){
+    saveWallpaper(null);
+    applyWallpaper();
+    toast("Wallpaper removed", "success");
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if (!confirm("This will delete ALL shortcuts and reset all settings. Continue?")) return;
+    state.shortcuts = [];
+    state.settings = { bgColor: "#0a0a12", wallpaperOpacity: 60 };
+    state.wallpaper = null;
+    try {
+      localStorage.removeItem(LS_SHORTCUTS);
+      localStorage.removeItem(LS_SETTINGS);
+      localStorage.removeItem(LS_WALLPAPER);
+    } catch(e){}
+    applyBgColor();
+    applyWallpaper();
+    renderGrid();
+    closeSettings();
+    toast("Everything reset", "success");
+  });
+
+  function openSettings(){
+    settingsBackdrop.classList.add("open");
+    applyBgColor();
+    applyWallpaper();
+  }
+  function closeSettings(){
+    settingsBackdrop.classList.remove("open");
+    dismissKeyboard();
+    if (document.activeElement && document.activeElement.blur) {
+      try { document.activeElement.blur(); } catch(e){}
+    }
+  }
+
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
+  document.getElementById("settingsClose").addEventListener("click", closeSettings);
+  settingsBackdrop.addEventListener("click", function(e){
+    if (e.target === settingsBackdrop) closeSettings();
+  });
+
+  /* ============================================================
+     IMAGE RESIZE
+     ============================================================ */
+  function resizeImage(file, maxW, maxH, quality, cb){
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var scale = Math.min(maxW / w, maxH / h, 1);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          cb(canvas.toDataURL("image/jpeg", quality));
+        } catch(e){
+          toast("Couldn't process that image", "error");
+        }
+      };
+      img.onerror = function(){ toast("Couldn't load image", "error"); };
+      img.src = ev.target.result;
+    };
+    reader.onerror = function(){ toast("Couldn't read file", "error"); };
+    reader.readAsDataURL(file);
+  }
+
+  /* ============================================================
+     INPUTMODЕ=NONE ON ALL FORM INPUTS
+     ============================================================ */
+  function applyInputModeNone(){
+    document.querySelectorAll('input:not([type]),input[type="text"],input[type="url"],input[type="search"],input[type="email"],input[type="tel"],input[type="password"],textarea,[contenteditable="true"]').forEach(function(el){
+      // Skip color inputs
+      if (el.type === "color" || el.type === "file") return;
+      el.setAttribute("inputmode", "none");
+      el.setAttribute("autocorrect", "off");
+      el.setAttribute("autocapitalize", "off");
+      el.setAttribute("spellcheck", "false");
+      el.setAttribute("virtualkeyboardpolicy", "manual");
+    });
+  }
+  applyInputModeNone();
+  if (window.MutationObserver) {
+    new MutationObserver(applyInputModeNone).observe(document.body, { childList: true, subtree: true });
+  }
+
+  /* ============================================================
+     KEYBOARD INPUT SCROLLING
+     ============================================================ */
+  editBody.addEventListener("focusin", function(e){
+    var el = e.target;
+    if (!el.matches || !el.matches("input, textarea")) return;
+    setTimeout(function(){
+      var kbWrap = document.getElementById("kbWrap");
+      var kbH = kbWrap ? kbWrap.offsetHeight : 0;
+      if (!kbH) return;
+      var rect = el.getBoundingClientRect();
+      var visibleBottom = window.innerHeight - kbH - 20;
+      if (rect.bottom > visibleBottom){
+        editBody.scrollTop += (rect.bottom - visibleBottom);
+      }
+    }, 340);
+  });
+
+  /* ============================================================
+     ESC closes modals
+     ============================================================ */
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){
+      if (settingsBackdrop.classList.contains("open")) { closeSettings(); return; }
+      if (editBackdrop.classList.contains("open")) { closeEditModal(); return; }
+    }
+  });
+
+  /* ============================================================
+     SCROLL FADE
+     ============================================================ */
+  var scrollFade = document.getElementById("scrollFade");
+  window.addEventListener("scroll", function(){
+    scrollFade.classList.toggle("visible", window.scrollY > 10);
+  }, { passive: true });
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  function init(){
+    loadShortcuts();
+    loadSettings();
+    loadWallpaper();
+
+    renderBgPresets();
+    applyBgColor();
+    applyWallpaper();
+    renderGrid();
+
+    if (!storageOK) {
+      setTimeout(function(){
+        toast("Storage is blocked — nothing will persist", "error");
+      }, 600);
+    }
+
+    if (typeof gsap !== "undefined") {
+      gsap.from("header.app-header", { y: -16, opacity: 0, duration: 0.5, ease: "power3.out" });
+      gsap.from(".icon-btn", { scale: 0.6, opacity: 0, duration: 0.4, stagger: 0.06, ease: "back.out(2)", delay: 0.15 });
+    }
+
+    ["addBtn","settingsBtn"].forEach(function(id){
+      var el = document.getElementById(id);
+      el.addEventListener("pointerenter", function(){
+        if (typeof gsap !== "undefined") gsap.to(el, { scale: 1.06, duration: 0.18, ease: "power2.out" });
+      });
+      el.addEventListener("pointerleave", function(){
+        if (typeof gsap !== "undefined") gsap.to(el, { scale: 1, duration: 0.18, ease: "power2.out" });
+      });
+    });
+
+    console.log("[appgrid] ready ✔  storage:", storageOK, " shortcuts:", state.shortcuts.length);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>

@@ -84,7 +84,7 @@
     loadSettings();
 
     /* ============================================================
-       1. INJECT CSS (synchronous, before anything paints)
+       1. INJECT CSS
        ============================================================ */
     function injectCSS() {
         if (document.getElementById("vk-styles")) return;
@@ -127,7 +127,6 @@
 
             '.kb-wrap .simple-keyboard{position:relative;z-index:5;width:100%;flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}' +
 
-            /* SETTINGS OVERLAY */
             '.kb-settings-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(52,52,62,.97) 0%,rgba(28,28,36,.985) 100%);' +
             'backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);' +
             'border-top-left-radius:inherit;border-top-right-radius:inherit;z-index:25;display:flex;flex-direction:column;overflow:hidden;' +
@@ -170,7 +169,6 @@
             '.kb-seg__btn i{font-size:13px}' +
             '.kb-seg__btn.active{background:linear-gradient(180deg,#2c88ff 0%,#0a72e6 100%);color:#fff;box-shadow:0 3px 8px rgba(10,132,255,.45),inset 0 1px 0 rgba(255,255,255,.35)}' +
 
-            /* RESIZE */
             '.kb-resize-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:2147483001;opacity:0;pointer-events:none;transition:opacity .22s ease}' +
             '.kb-resize-backdrop.active{opacity:1;pointer-events:auto}' +
             '.kb-resize-handle{position:absolute;top:-14px;left:50%;transform:translateX(-50%) scale(.85);width:55%;max-width:400px;height:28px;display:flex;align-items:center;justify-content:center;cursor:ns-resize;touch-action:none;z-index:40;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .28s cubic-bezier(.34,1.5,.64,1)}' +
@@ -182,7 +180,6 @@
             '.kb-resize-toast__dot{width:6px;height:6px;border-radius:50%;background:#0a84ff;box-shadow:0 0 8px rgba(10,132,255,.9)}' +
             '.kb-resize-toast__value{font-variant-numeric:tabular-nums;color:#6cb8ff;font-weight:900}' +
 
-            /* KEYBOARD KEYS */
             '.kb-dark.hg-theme-default{background:transparent !important;padding:var(--vk-pad-y) var(--vk-pad-x) calc(var(--vk-pad-y)*.8);font-family:var(--vk-font);font-weight:800;width:100%}' +
             '.kb-dark.hg-theme-default .hg-row:not(:last-child){margin-bottom:var(--vk-row-gap)}' +
             '.kb-dark.hg-theme-default .hg-row{display:flex;gap:6px}' +
@@ -206,7 +203,6 @@
             '.kb-wrap.resizing .simple-keyboard{pointer-events:none;filter:brightness(.85)}' +
             '.kb-wrap.resizing .kb-header{opacity:.35;pointer-events:none}' +
 
-            /* RESPONSIVE */
             '@media (max-width:480px){:root{--vk-key-h:42px;--vk-pad-x:8px;--vk-pad-y:12px}.kb-wrap{border-top-left-radius:24px;border-top-right-radius:24px}}' +
             '@media (max-width:360px){:root{--vk-key-h:38px;--vk-pad-x:6px;--vk-pad-y:10px}.kb-wrap{border-top-left-radius:20px;border-top-right-radius:20px}.kb-icon-btn{width:32px;height:32px;font-size:14px}}' +
             '@media (orientation:landscape) and (max-height:500px){:root{--vk-key-h:34px;--vk-pad-x:16px;--vk-pad-y:8px}.kb-wrap{max-height:80vh;border-top-left-radius:18px;border-top-right-radius:18px}}';
@@ -374,11 +370,9 @@
         injectHTML();
         setupInputModeNone();
 
-        // SimpleKeyboard might already be loaded (we're deferred)
         var SK = window.SimpleKeyboard;
         var KeyboardCtor = (typeof SK === "function") ? SK : (SK && SK.default);
         if (!KeyboardCtor) {
-            // Wait for it if not ready yet
             var tries = 0;
             var t = setInterval(function () {
                 SK = window.SimpleKeyboard;
@@ -449,6 +443,7 @@
         var letterLayout = "default";
         var keyboard = null;
         var isRebuilding = false;
+        var suppressRefocus = false;   // <-- set true when we intentionally close
 
         function handleChange(input) {
             if (!currentInput) return;
@@ -515,7 +510,11 @@
             kbWrap.classList.add("open");
         }
         function hideKeyboard() {
+            // suppress the focusout refocus BEFORE we close
+            suppressRefocus = true;
             kbWrap.classList.remove("open");
+            // release the suppress flag next tick, after focusout's setTimeout runs
+            setTimeout(function () { suppressRefocus = false; }, 250);
         }
 
         /* ---------- REPEAT ENGINE ---------- */
@@ -822,11 +821,21 @@
         });
 
         /* ---------- Close Button ---------- */
+        // Stop the button from stealing focus / scrolling the page
+        kbClose.addEventListener("pointerdown", function (e) {
+            e.preventDefault();
+        });
         kbClose.addEventListener("click", function (e) {
             e.preventDefault();
+            e.stopPropagation();
             stopAllRepeats();
             hideKeyboard();
-            if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+            // Blur the input AFTER we suppress refocus
+            setTimeout(function () {
+                if (document.activeElement && document.activeElement.blur) {
+                    try { document.activeElement.blur(); } catch (err) { }
+                }
+            }, 0);
         });
 
         /* ---------- FOCUS → SHOW KEYBOARD ---------- */
@@ -834,13 +843,15 @@
             var el = e.target;
             if (!isEditableEl(el)) return;
             if (kbWrap.contains(el)) return;
+            // skip if we're in the middle of closing
+            if (suppressRefocus) return;
 
             currentInput = el;
             keyboard.setInput(getVal(el));
             showKeyboard();
 
-            // Scroll input into view if it's hidden behind the keyboard
             setTimeout(function () {
+                if (suppressRefocus) return;
                 var rect = el.getBoundingClientRect();
                 var kbH = kbWrap.offsetHeight || 300;
                 var kbTop = window.innerHeight - kbH;
@@ -858,10 +869,15 @@
             if (el !== currentInput) return;
             if (!kbWrap.classList.contains("open")) return;
             if (kbWrap.classList.contains("resizing")) return;
+
             setTimeout(function () {
-                var a = document.activeElement;
+                // Skip everything if a close is in progress or the keyboard is already closed
+                if (suppressRefocus) return;
+                if (!kbWrap.classList.contains("open")) return;
                 if (kbSettingsOverlay.classList.contains("open")) return;
-                if (kbWrap.contains(a)) return;
+                if (kbWrap.contains(document.activeElement)) return;
+
+                var a = document.activeElement;
                 if (a === document.body || a === document.documentElement || a === null) {
                     try { el.focus({ preventScroll: true }); } catch (err) { }
                 }
@@ -921,7 +937,6 @@
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", init);
     } else {
-        // DOM ready but body might not be — wait a tick
         if (document.body) init();
         else setTimeout(init, 0);
     }
